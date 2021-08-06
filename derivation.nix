@@ -16,9 +16,17 @@ stdenv.mkDerivation {
   preConfigure = "cd backend";
   buildPhase = ''
     export PATH="${nodeDependencies}/bin:$PATH"
-    cp -r ${nodeDependencies}/lib/node_modules ./node_modules
-    echo "going to run npm now"
-    npm install
+    # if there is no HOME var, then npm will try to write to root dir, for which it has no write permissions to, so we provide HOME var
+    export HOME=./home
+
+    # and create this dir as well
+    mkdir $HOME
+
+    # copy contents of the node_modules, following symlinks, such that current build/install will be able to modify local copies
+    cp -Lr ${nodeDependencies}/lib/node_modules ./node_modules
+    # allow user to write. the build will try to write into ./node_modules/@types/node
+    chmod -R u+w ./node_modules
+    # we already have populated node_modules dir, so we don't need to run `npm install`
     npm run build
   '';
 }
