@@ -12,6 +12,7 @@ stdenv.mkDerivation {
   };
   buildInputs = with pkgs;
   [ nodejs
+    python
   ];
   preConfigure = "cd backend";
   buildPhase = ''
