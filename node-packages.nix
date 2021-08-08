@@ -112,6 +112,15 @@ let
         sha512 = "YATxVxgRqNH6nHEIsvg6k2Boc1JHI9ZbH5iWFFv/MTkchz3b1ieGDa5T0a9RznNdI0KhVbdbWSN+KWWrQZRxTw==";
       };
     };
+    "@types/node-14.14.20" = {
+      name = "_at_types_slash_node";
+      packageName = "@types/node";
+      version = "14.14.20";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/@types/node/-/node-14.14.20.tgz";
+        sha512 = "Y93R97Ouif9JEOWPIUyU+eyIdyRqQR0I8Ez1dzku4hDx34NWh4HbtIc3WNzwB1Y9ULvNGeu5B8h8bVL5cAk4/A==";
+      };
+    };
     "@types/node-10.12.18" = {
       name = "_at_types_slash_node";
       packageName = "@types/node";
@@ -1481,7 +1490,7 @@ let
       sources."@types/express-serve-static-core-4.17.24"
       sources."@types/locutus-0.0.6"
       sources."@types/mime-1.3.2"
-      sources."@types/node-10.12.18"
+      sources."@types/node-14.14.20"
       sources."@types/qs-6.9.7"
       sources."@types/range-parser-1.2.4"
       sources."@types/serve-static-1.13.10"
@@ -1496,7 +1505,11 @@ let
       sources."bech32-1.1.4"
       sources."bindings-1.5.0"
       sources."bip174-2.0.1"
-      sources."bip32-2.0.6"
+      (sources."bip32-2.0.6" // {
+        dependencies = [
+          sources."@types/node-10.12.18"
+        ];
+      })
       sources."bip66-1.1.5"
       sources."bitcoin-ops-1.4.1"
       sources."bitcoinjs-lib-5.2.0"
