@@ -25,6 +25,8 @@ in
           schema = "${pkgs.mempool-backend}/backend/mariadb-structure.sql";
         }
       ];
+      # this script defines password for mysql user 'mempool'
+      services.mysql.initialScript = "${pkgs.mempool-backend}/backend/initial_script.sql";
       ensureUsers = [
         { name = "mempool";
           ensurePermissions = {
