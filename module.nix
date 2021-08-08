@@ -19,6 +19,7 @@ in
     # enable mysql and declare mempool DB
     services.mysql = {
       enable = true;
+      package = pkgs.mariadb; # there is no default value for this option, so we define one
       initialDatabases = [
         { name = "mempool";
           schema = "${pkgs.mempool}/lib/mariadb-structure.sql";
