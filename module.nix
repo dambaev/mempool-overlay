@@ -28,7 +28,8 @@ in
       electrs # one of mempool's dependencies
     ];
     services.bitcoind.mempool = {
-      enable = true;
+      # temporary disable bitcoind instanse as it consumes all the disk space on VM
+      # enable = true; 
       extraConfig = ''
         txindex = 1
       '';
