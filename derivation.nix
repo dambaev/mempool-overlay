@@ -30,6 +30,13 @@ stdenv.mkDerivation {
     # we already have populated node_modules dir, so we don't need to run `npm install`
     npm run build
   '';
+  installPhase = ''
+    mkdir -p $out/lib
+    cp -r ./node_modules $out/lib/
+    cp -r dist $out/lib/
+    cp package.json $out/lib/ # needed for `npm run start`
+    cp ../mariadb-structure.sql $out/lib # this schema will be useful for a module.nix file, which will populate the db from it.
+  '';
   patches = [
     ./start_with_config_argument.patch # this patch adds support for '-c'/'--config' argument, so we can run `npm run start -- -c /path/to/config` later.
   ];
