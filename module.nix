@@ -68,7 +68,12 @@ in
       mempool_config = pkgs.writeText "mempool-backend.json" cfg.config; # this renders config and stores in /nix/store
     in {
       wantedBy = [ "multi-user.target" ];
-      after = [ "network-setup.service" "electrs.service" "bitcoin-mempool.service" ];
+      after = [
+        "network-setup.service"
+        "electrs.service"
+        # TODO: enable in production, on a test VM it consumes all the space
+        # "bitcoin-mempool.service"
+      ];
       requires = [ "network-setup.service" "electrs.service" ];
       serviceConfig = {
         Type = "simple";
