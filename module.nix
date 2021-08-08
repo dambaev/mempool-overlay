@@ -74,7 +74,7 @@ in
       };
       path = with pkgs; [ mempool-backend nodejs ];
       script = ''
-        cd ${mempool-backend}/backend/
+        cd ${pkgs.mempool-backend}/backend/
         npm run start -- -c ${mempool_config}
       '';
     };
