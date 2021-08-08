@@ -30,7 +30,7 @@ in
           ensurePermissions = {
             "mempool.*" = "ALL PRIVILEGES";
           };
-        };
+        }
       ];
     };
   };
