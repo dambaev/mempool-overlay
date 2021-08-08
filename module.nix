@@ -22,7 +22,7 @@ in
       initialDatabases = [
         { name = "mempool";
           schema = "${mempool}/lib/mariadb-structure.sql";
-        };
+        }
       ];
     };
   };
