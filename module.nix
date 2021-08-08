@@ -25,6 +25,13 @@ in
           schema = "${pkgs.mempool-backend}/backend/mariadb-structure.sql";
         }
       ];
+      ensureUsers = [
+        { name = "mempool";
+          ensurePermissions = {
+            "mempool.*" = "ALL PRIVILEGES";
+          };
+        };
+      ];
     };
   };
 }
