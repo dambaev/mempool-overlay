@@ -36,5 +36,7 @@ in
         }
       ];
     };
+    # enable electrs service
+    services.electrs.enable = true;
   };
 }
