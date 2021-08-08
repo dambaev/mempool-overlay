@@ -27,19 +27,19 @@ in
       mempool-backend # and now we can use 'mempool-backend' derivation by importing overlay above.
       electrs # one of mempool's dependencies
     ];
-    services.bitcoind.mempool = {
-      # temporary disable bitcoind instanse as it consumes all the disk space on VM
-      # enable = true; 
-      extraConfig = ''
-        txindex = 1
-      '';
-      rpc.users = {
-        mempool = {
-          name = "mempool";
-          passwordHMAC = "e85b8cd1bbfd7a4500053b4159092990$7941d89fc530a2a40faaa2073f6355f7e17821fac438827d62fd5e78b48938a9";
-        };
-      };
-    };
+# temporary disable bitcoind instanse as it consumes all the disk space on VM
+#    services.bitcoind.mempool = {
+#      # enable = true;
+#      extraConfig = ''
+#        txindex = 1
+#      '';
+#      rpc.users = {
+#        mempool = {
+#          name = "mempool";
+#          passwordHMAC = "e85b8cd1bbfd7a4500053b4159092990$7941d89fc530a2a40faaa2073f6355f7e17821fac438827d62fd5e78b48938a9";
+#        };
+#      };
+#    };
     # enable mysql and declare mempool DB
     services.mysql = {
       enable = true;
