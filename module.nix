@@ -72,7 +72,7 @@ in
       serviceConfig = {
         Type = "simple";
       };
-      path = with pkgs; [ mempool-backend nodejs ];
+      path = with pkgs; [ mempool-backend nodejs bashInteractive ];
       script = ''
         cd ${pkgs.mempool-backend}/backend/
         npm run start -- -c ${mempool_config}
