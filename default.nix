@@ -8,4 +8,5 @@ let
 
 in {
   mempool-backend = pkgs.mempool-backend;
+  mempool-frontend = pkgs.mempool-frontend;
 }
