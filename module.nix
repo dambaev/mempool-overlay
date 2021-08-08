@@ -64,7 +64,7 @@ in
     # create mempool systemd service
     systemd.services.mempool-backend =
     let
-      mempool_config = pkgs.writeText "mempool-backend.conf" cfg.config; # this renders config and stores in /nix/store
+      mempool_config = pkgs.writeText "mempool-backend.json" cfg.config; # this renders config and stores in /nix/store
     in {
       wantedBy = [ "multi-user.target" ];
       after = [ "network-setup.service" "electrs.service" "bitcoin-mempool.service" ];
