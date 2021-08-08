@@ -16,5 +16,14 @@ in
 #    services.bitcoind.mempool = {
 #     
 #    };
+    # enable mysql and declare mempool DB
+    services.mysql = {
+      enable = true;
+      initialDatabases = [
+        { name = "mempool";
+          schema = "${mempool}/lib/mariadb-structure.sql";
+        };
+      ];
+    };
   };
 }
