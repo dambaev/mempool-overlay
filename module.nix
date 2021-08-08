@@ -12,6 +12,7 @@ in
     nixpkgs.overlays = [ overlay ]; # here we include our mempool 'overlay' contents, which will bring 'mempool-*' derivations into context
     environment.systemPackages = with pkgs; [
       mempool-backend # and now we can use 'mempool-backend' derivation by importing overlay above.
+      electrs # one of mempool's dependencies
     ];
 #    services.bitcoind.mempool = {
 #     
