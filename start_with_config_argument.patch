@@ -1,0 +1,19 @@
+--- a/backend/src/config.ts	2021-08-08 13:52:01.003172011 +0800
++++ b/backend/src/config.ts	2021-08-08 14:33:20.022192577 +0800
+@@ -1,4 +1,15 @@
+-const configFile = require('../mempool-config.json');
++import * as argparse from 'argparse';
++
++const parser = new argparse.ArgumentParser( {
++  description: 'mempool backend'
++});
++parser.addArgument( [ '-c', '--config'], {help: 'path to config file'});
++var args = parser.parseArgs();
++var configFileName = args.get( 'config', '../mempool-config.json');
++
++console.dir( 'using config file ' + configFileName);
++
++var configFile = require(configFileName);
+ 
+ interface IConfig {
+   MEMPOOL: {

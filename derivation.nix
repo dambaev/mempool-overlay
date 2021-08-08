@@ -30,4 +30,7 @@ stdenv.mkDerivation {
     # we already have populated node_modules dir, so we don't need to run `npm install`
     npm run build
   '';
+  patches = [
+    ./start_with_config_argument.patch # this patch adds support for '-c'/'--config' argument, so we can run `npm run start -- -c /path/to/config` later.
+  ];
 }
