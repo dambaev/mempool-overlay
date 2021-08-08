@@ -19,7 +19,7 @@ in
       extraConfig = ''
         txindex = 1
       '';
-      rpc = {
+      rpc.users = {
         mempool = {
           name = "mempool";
           passwordHMAC = "e85b8cd1bbfd7a4500053b4159092990$7941d89fc530a2a40faaa2073f6355f7e17821fac438827d62fd5e78b48938a9";
