@@ -21,7 +21,7 @@ in
       enable = true;
       initialDatabases = [
         { name = "mempool";
-          schema = "${mempool}/lib/mariadb-structure.sql";
+          schema = "${pkgs.mempool}/lib/mariadb-structure.sql";
         }
       ];
     };
