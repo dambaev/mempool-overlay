@@ -7,9 +7,10 @@ let
     ];
   };
   shell = pkgs.mkShell {
-    buildInputs = pkgs.mempool.buildInputs ++ [
-      # your development tools like debugger / profiler should be listed here
-    ];
+    buildInputs = pkgs.mempool-backend.buildInputs
+      ++ [
+        # your development tools like debugger / profiler should be listed here
+      ];
   };
 
 in shell

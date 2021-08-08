@@ -2,42 +2,44 @@
 { stdenv, pkgs, fetchurl }:
 let
   nodeDependencies = ( pkgs.callPackage ./mempool-backend.nix {}).shell.nodeDependencies;
-in
-stdenv.mkDerivation {
-  name = "mempool";
+  backend_derivation = stdenv.mkDerivation {
+    name = "mempool-backend";
 
-  src = fetchurl {
-    url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
-    sha256 = "1gccza1s28ja78iyqv5h22ix5w21acbvffahsb5ifn27q4bq8mk3";
+    src = fetchurl {
+      url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
+      sha256 = "1gccza1s28ja78iyqv5h22ix5w21acbvffahsb5ifn27q4bq8mk3";
+    };
+    buildInputs = with pkgs;
+    [ nodejs
+      python
+    ];
+    preConfigure = "cd backend";
+    buildPhase = ''
+      export PATH="${nodeDependencies}/bin:$PATH"
+      # if there is no HOME var, then npm will try to write to root dir, for which it has no write permissions to, so we provide HOME var
+      export HOME=./home
+
+      # and create this dir as well
+      mkdir $HOME
+
+      # copy contents of the node_modules, following symlinks, such that current build/install will be able to modify local copies
+      cp -Lr ${nodeDependencies}/lib/node_modules ./node_modules
+      # allow user to write. the build will try to write into ./node_modules/@types/node
+      chmod -R u+w ./node_modules
+      # we already have populated node_modules dir, so we don't need to run `npm install`
+      npm run build
+    '';
+    installPhase = ''
+      mkdir -p $out/backend
+      cp -r ./node_modules $out/backend
+      cp -r dist $out/backend
+      cp package.json $out/backend/ # needed for `npm run start`
+      cp ../mariadb-structure.sql $out/backend # this schema will be useful for a module.nix file, which will populate the db from it.
+    '';
+    patches = [
+      ./start_with_config_argument.patch # this patch adds support for '-c'/'--config' argument, so we can run `npm run start -- -c /path/to/config` later.
+    ];
   };
-  buildInputs = with pkgs;
-  [ nodejs
-    python
-  ];
-  preConfigure = "cd backend";
-  buildPhase = ''
-    export PATH="${nodeDependencies}/bin:$PATH"
-    # if there is no HOME var, then npm will try to write to root dir, for which it has no write permissions to, so we provide HOME var
-    export HOME=./home
-
-    # and create this dir as well
-    mkdir $HOME
-
-    # copy contents of the node_modules, following symlinks, such that current build/install will be able to modify local copies
-    cp -Lr ${nodeDependencies}/lib/node_modules ./node_modules
-    # allow user to write. the build will try to write into ./node_modules/@types/node
-    chmod -R u+w ./node_modules
-    # we already have populated node_modules dir, so we don't need to run `npm install`
-    npm run build
-  '';
-  installPhase = ''
-    mkdir -p $out/lib
-    cp -r ./node_modules $out/lib/
-    cp -r dist $out/lib/
-    cp package.json $out/lib/ # needed for `npm run start`
-    cp ../mariadb-structure.sql $out/lib # this schema will be useful for a module.nix file, which will populate the db from it.
-  '';
-  patches = [
-    ./start_with_config_argument.patch # this patch adds support for '-c'/'--config' argument, so we can run `npm run start -- -c /path/to/config` later.
-  ];
+in
+{ mempool-backend = backend_derivation;
 }

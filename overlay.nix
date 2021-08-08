@@ -1,3 +1,3 @@
 self: super: {
-  mempool = self.callPackage ./derivation.nix {};
+  mempool-backend = (self.callPackage ./derivation.nix {}).mempool-backend;
 }

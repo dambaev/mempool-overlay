@@ -6,4 +6,6 @@ let
     ];
   };
 
-in pkgs.mempool
+in {
+  mempool-backend = pkgs.mempool-backend;
+}

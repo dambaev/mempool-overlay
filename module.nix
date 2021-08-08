@@ -9,9 +9,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    nixpkgs.overlays = [ overlay ]; # here we include our mempool 'overlay' contents, which will bring 'mempool' derivation into context
+    nixpkgs.overlays = [ overlay ]; # here we include our mempool 'overlay' contents, which will bring 'mempool-*' derivations into context
     environment.systemPackages = with pkgs; [
-      mempool # and now we can use 'mempool' derivation by importing overlay above.
+      mempool-backend # and now we can use 'mempool-backend' derivation by importing overlay above.
     ];
 #    services.bitcoind.mempool = {
 #     
@@ -22,7 +22,7 @@ in
       package = pkgs.mariadb; # there is no default value for this option, so we define one
       initialDatabases = [
         { name = "mempool";
-          schema = "${pkgs.mempool}/lib/mariadb-structure.sql";
+          schema = "${pkgs.mempool-backend}/backend/mariadb-structure.sql";
         }
       ];
     };
