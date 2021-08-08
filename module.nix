@@ -6,6 +6,19 @@ in
 {
   options.services.mempool = {
     enable = lib.mkEnableOption "Mempool service";
+    config = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      example = ''
+        {
+          "ELECTRUM": {
+            "HOST": "127.0.0.1",
+            "PORT": 50002,
+            "TLS_ENABLED": true,
+          }
+        }
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -47,5 +60,23 @@ in
     };
     # enable electrs service
     services.electrs.enable = true;
+
+    # create mempool systemd service
+    systemd.services.mempool-backend =
+    let
+      mempool_config = pkgs.writeText "mempool-backend.conf" cfg.config; # this renders config and stores in /nix/store
+    in {
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network-setup.service" "electrs.service" "bitcoin-mempool.service" ];
+      requires = [ "network-setup.service" "electrs.service" ];
+      serviceConfig = {
+        Type = "simple";
+      };
+      path = with pkgs; [ mempool-backend nodejs ];
+      script = ''
+        cd ${mempool-backend}/backend/
+        npm run start -- -c ${mempool_config}
+      '';
+    };
   };
 }
