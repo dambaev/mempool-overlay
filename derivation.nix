@@ -9,6 +9,10 @@ let
   backend_derivation =
   let
     nodeDependencies = ( pkgs.callPackage ./mempool-backend.nix {}).shell.nodeDependencies;
+    initial_script = pkgs.writeTextFile "initial_script.sql" ''
+      ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
+      flush privileges;
+    '';
   in stdenv.mkDerivation {
     name = "mempool-backend";
 
@@ -39,6 +43,7 @@ let
       cp -r dist $out/backend
       cp package.json $out/backend/ # needed for `npm run start`
       cp ../mariadb-structure.sql $out/backend # this schema will be useful for a module.nix file, which will populate the db from it.
+      cp ${initial_script} $out/backend/initial_script.sql # script, which should setup DB user
     '';
     patches = [
       ./start_with_config_argument.patch # this patch adds support for '-c'/'--config' argument, so we can run `npm run start -- -c /path/to/config` later.
