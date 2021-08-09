@@ -25,7 +25,6 @@ in
     nixpkgs.overlays = [ overlay ]; # here we include our mempool 'overlay' contents, which will bring 'mempool-*' derivations into context
     environment.systemPackages = with pkgs; [
       mempool-backend # and now we can use 'mempool-backend' derivation by importing overlay above.
-      electrs # one of mempool's dependencies
     ];
     # enable mysql and declare mempool DB
     services.mysql = {
@@ -46,8 +45,6 @@ in
         }
       ];
     };
-    # enable electrs service
-    services.electrs.enable = true;
 
     # create mempool systemd service
     systemd.services.mempool-backend =
