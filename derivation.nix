@@ -9,7 +9,7 @@ let
   backend_derivation =
   let
     nodeDependencies = ( pkgs.callPackage ./mempool-backend.nix {}).shell.nodeDependencies;
-    initial_script = pkgs.writeTextFile "initial_script.sql" ''
+    initial_script = pkgs.writeText "initial_script.sql" ''
       ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
       flush privileges;
     '';
