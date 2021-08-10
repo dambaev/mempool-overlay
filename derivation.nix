@@ -52,7 +52,7 @@ let
   };
   frontend_derivation =
   let
-    nodeDependencies = ( pkgs.callPackage ./mempool-frontend.nix {}).shell.nodeDependencies;
+    nodeDependencies = ( pkgs.callPackage ./frontend/mempool-frontend.nix {}).shell.nodeDependencies;
   in stdenv.mkDerivation {
     name = "mempool-frontend";
 
@@ -78,7 +78,6 @@ let
       cp -Lr ${nodeDependencies}/lib/node_modules ./node_modules
       # allow user to write
       chmod -R u+w ./node_modules
-      ng analytics off
       # we already have populated node_modules dir, so we don't need to run `npm install`
       npm run build
     '';

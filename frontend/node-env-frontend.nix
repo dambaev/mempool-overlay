@@ -360,6 +360,8 @@ let
 
           export NG_CLI_ANALYTICS=ci
           echo "NG_CLI_ANALYTICS = $NG_CLI_ANALYTICS"
+          export DEBUG='cypress:*'
+          export CYPRESS_INSTALL_BINARY=0
           node ${addIntegrityFieldsScript}
         ''}
 
@@ -520,8 +522,6 @@ let
 
       buildInputs = [ python nodejs ] ++ stdenv.lib.optional (stdenv.isLinux) utillinux ++ buildInputs;
       buildCommand = ''
-        export NG_CLI_ANALYTICS=ci
-        echo "NG_CLI_ANALYTICS = $NG_CLI_ANALYTICS"
         mkdir -p $out/bin
         cat > $out/bin/shell <<EOF
         #! ${stdenv.shell} -e
@@ -536,8 +536,6 @@ let
       shellHook = stdenv.lib.optionalString (dependencies != []) ''
         export NODE_PATH=${nodeDependencies}/lib/node_modules
         export PATH="${nodeDependencies}/bin:$PATH"
-        export NG_CLI_ANALYTICS=ci
-        echo "NG_CLI_ANALYTICS = $NG_CLI_ANALYTICS"
       '';
     };
 in
