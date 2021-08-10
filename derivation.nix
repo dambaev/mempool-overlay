@@ -73,7 +73,7 @@ let
       # and create this dir as well
       mkdir $HOME
 
-      export NG_CLI_ANALYTICS=ci
+      export NG_CLI_ANALYTICS=off
       # copy contents of the node_modules, following symlinks, such that current build/install will be able to modify local copies
       cp -Lr ${nodeDependencies}/lib/node_modules ./node_modules
       # allow user to write
