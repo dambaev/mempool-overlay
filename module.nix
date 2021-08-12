@@ -42,7 +42,7 @@ in
       package = pkgs.mariadb; # there is no default value for this option, so we define one
       initialDatabases = [
         { name = "mempool";
-          schema = "${pkgs.mempool-backend}/backend/mariadb-structure.sql";
+          schema = "${mempool-source}/mariadb-structure.sql";
         }
       ];
       # this script defines password for mysql user 'mempool'
