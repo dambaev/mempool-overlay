@@ -2,7 +2,7 @@
 let
   mempool-source-set = {
     url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
-    sha256 = "1gccza1s28ja78iyqv5h22ix5w21acbvffahsb5ifn27q4bq8mk3";
+    sha256 = "1h2vf54rjsajiy7lh0md8ymdipn04qpbxzqqwfr3b13fzfk29wng";
   };
   mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-backend-build-container-name = "mempool-backend-build-${mempool-source-set.sha256}";
