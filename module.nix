@@ -111,6 +111,7 @@ in
         environment.systemPackages = with pkgs; [
           nodejs
         ];
+        networking.hostName = "mempoolbackendbuilder";
       };
     };
 
