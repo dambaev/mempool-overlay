@@ -32,7 +32,7 @@ let
       mkdir $HOME
 
       # copy contents of the node_modules, following symlinks, such that current build/install will be able to modify local copies
-      cp -Lr ${nodeDependencies}/lib/node_modules ./node_modules
+      cp -r ${nodeDependencies}/lib/node_modules ./node_modules
       # allow user to write. the build will try to write into ./node_modules/@types/node
       chmod -R u+w ./node_modules
       # we already have populated node_modules dir, so we don't need to run `npm install`
@@ -75,7 +75,7 @@ let
 
       export NG_CLI_ANALYTICS=off
       # copy contents of the node_modules, following symlinks, such that current build/install will be able to modify local copies
-      cp -Lr ${nodeDependencies}/lib/node_modules ./node_modules
+      cp -r ${nodeDependencies}/lib/node_modules ./node_modules
       # allow user to write
       chmod -R u+w ./node_modules
       # we already have populated node_modules dir, so we don't need to run `npm install`
