@@ -1,4 +1,4 @@
-{config, pkgs, options, lib, ...}:
+{config, pkgs, options, lib, fetchzip, ...}:
 let
   mempool-source = fetchzip {
     url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
