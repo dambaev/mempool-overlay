@@ -77,7 +77,7 @@ in
       serviceConfig = {
         Type = "simple";
       };
-      path = with pkgs; [ mempool-backend nodejs bashInteractive ];
+      path = with pkgs; [ nodejs bashInteractive ];
       script = ''
         CURRENT_BACKEND=$(cat /etc/mempool/backend | echo "")
 
