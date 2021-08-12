@@ -51,7 +51,7 @@ in
         }
       ];
       # this script defines password for mysql user 'mempool'
-      initialScript = "${initialScript}";
+      initialScript = "${initial_script}";
       ensureUsers = [
         { name = "mempool";
           ensurePermissions = {
