@@ -86,7 +86,7 @@ in
       '';
     };
     # define containers, in which the actual build will be running in an isolated filesystem, but with Internet access
-    containers.${mempool-backend-build-container-name) = {
+    containers.${mempool-backend-build-container-name} = {
       privateNetwork = true;
       hostAddress = "192.168.254.1";
       localAddress = "192.168.254.2";
