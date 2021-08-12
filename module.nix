@@ -6,6 +6,11 @@ let
   };
   mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-backend-build-container-name = "mempool-backend-build-${mempool-source-set.sha256}";
+  initial_script = pkgs.writeText "initial_script.sql" ''
+    CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
+    ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
+    flush privileges;
+  '';
   mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
     set -ex
     mkdir -p /etc/mempool/
@@ -46,7 +51,7 @@ in
         }
       ];
       # this script defines password for mysql user 'mempool'
-      initialScript = "${pkgs.mempool-backend}/backend/initial_script.sql";
+      initialScript = "${initialScript}";
       ensureUsers = [
         { name = "mempool";
           ensurePermissions = {
