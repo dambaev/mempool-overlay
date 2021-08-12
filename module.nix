@@ -91,20 +91,22 @@ in
       privateNetwork = true;
       hostAddress = "192.168.254.1";
       localAddress = "192.168.254.2";
-      # those options will help to speedup evaluation of container's configurate
-      documentation.doc.enable = false;
-      documentation.enable = false;
-      documentation.info.enable = false;
-      documentation.man.enable = false;
-      documentation.nixos.enable = false;
-      # DNS
-      networking.nameservers = [
-        "8.8.8.8"
-        "8.8.4.4"
-      ];
-      environment.systemPackages = with pkgs; [
-        nodejs
-      ];
+      config = {
+        # those options will help to speedup evaluation of container's configurate
+        documentation.doc.enable = false;
+        documentation.enable = false;
+        documentation.info.enable = false;
+        documentation.man.enable = false;
+        documentation.nixos.enable = false;
+        # DNS
+        networking.nameservers = [
+          "8.8.8.8"
+          "8.8.4.4"
+        ];
+        environment.systemPackages = with pkgs; [
+          nodejs
+        ];
+      };
     };
 
     # this service will check if the build is needed and will start a build in a container
