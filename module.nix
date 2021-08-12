@@ -1,6 +1,19 @@
 {config, pkgs, options, lib, ...}:
 let
-  overlay = (import ./overlay.nix);
+  mempool-source = fetchzip {
+    url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
+    sha256 = "1gccza1s28ja78iyqv5h22ix5w21acbvffahsb5ifn27q4bq8mk3";
+  };
+  mempool-backend-build-container-name = "mempool-backend-build-${mempool-source}";
+  mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
+    set -ex
+    mkdir -p /etc/mempool/
+    cp -r ${mempool-source}/backend /etc/mempool/backend
+    cd /etc/mempool/backend
+    npm ci # using clean-install instead of install, as it is more stricter
+    npm run build
+  '';
+
   cfg = config.services.mempool;
 in
 {
@@ -22,10 +35,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    nixpkgs.overlays = [ overlay ]; # here we include our mempool 'overlay' contents, which will bring 'mempool-*' derivations into context
-    environment.systemPackages = with pkgs; [
-      mempool-backend # and now we can use 'mempool-backend' derivation by importing overlay above.
-    ];
     # enable mysql and declare mempool DB
     services.mysql = {
       enable = true;
@@ -64,8 +73,108 @@ in
       };
       path = with pkgs; [ mempool-backend nodejs bashInteractive ];
       script = ''
-        cd ${pkgs.mempool-backend}/backend/
-        npm run start -- -c ${mempool_config}
+        CURRENT_BACKEND=$(cat /etc/mempool/backend | echo "")
+
+        if [ "$CURRENT_BACKEND" == "" ]; then
+          echo "no mempool backend had been built yet, exiting. The successful build will start this service automatically"
+          exit 0
+        fi
+        cd "/var/lib/containers/$CURRENT_BACKEND/etc/mempool/backend"
+        # deploy the config
+        cp ${cfg.config} ./
+        npm run start
+      '';
+    };
+    # define containers, in which the actual build will be running in an isolated filesystem, but with Internet access
+    containers.${mempool-backend-build-container-name) = {
+      privateNetwork = true;
+      hostAddress = "192.168.254.1";
+      localAddress = "192.168.254.2";
+      # those options will help to speedup evaluation of container's configurate
+      documentation.doc.enable = false;
+      documentation.enable = false;
+      documentation.info.enable = false;
+      documentation.man.enable = false;
+      documentation.nixos.enable = false;
+      # DNS
+      networking.nameservers = [
+        "8.8.8.8"
+        "8.8.4.4"
+      ];
+      environment.systemPackages = with pkgs; [
+        nodejs
+      ];
+    };
+
+    # this service will check if the build is needed and will start a build in a container
+    systemd.services.mempool-backend-build = {
+      wantedBy = [ "multi-user.target" ];
+      after = [
+        "network-setup.service"
+      ];
+      requires = [ "network-setup.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = "yes"; # this allows to run rebuilds only when either service's config or mempool's sources had been changed
+      };
+      path = with pkgs; [
+        coreutils
+        systemd
+        nodejs
+        bashInteractive
+        mempool-backend-build-script
+        nixos-container
+        e2fsprogs
+      ];
+      script = ''
+        set -ex # echo and fail on errors
+
+        CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "there-is-no-backend-yet")
+        # first of all, cleanup old builds, that may had been interrupted
+        for FAILED_BUILD in ${ls -1 /var/lib/containers | grep "mempool-backend-build-" | grep -v "$CURRENT_BACKEND" || echo ""};
+        do
+          # stop if the build haven't been shutted down
+          systemctl stop "container@$FAILED_BUILD" || true
+          # remove the container's fs
+          chattr -i "/var/lib/containers/$FAILED_BUILD/var/empty" || true
+          rm -rf "/var/lib/containers/$FAILED_BUILD || true
+        done
+
+        if [ "$CURRENT_BACKEND" == "${mempool-backend-build-container-name}" ]; then
+          echo "${mempool-backend-build-container-name} is already active backend, do nothing"
+          exit 0
+        fi
+
+        # we are here, because $CURRENT_BACKEND is not ${mempool-backend-build-container-name}
+
+        # remove the build container dir, just in case if it exists already
+        systemctl stop "container@${mempool-backend-build-container-name}" || true
+        chattr -i "/var/lib/container/${mempool-backend-build-container-name}/var/empty" || true
+        rm -rf "/var/lib/container/${mempool-backend-build-container-name}"
+
+        # start build container
+        systemctl start container@${mempool-backend-build-container-name}
+        # wait until it will shutdown
+        nixos-container run "${mempool-backend-build-container-name}}" -- "${mempool-backend-build-script}/bin/mempool-backend-build-script" > /etc/mempool/backend-lastlog && {
+          # if build was successfull
+          # stop the container as it is not needed anymore
+          systemctl stop "container@${mempool-backend-build-container-name}" || true
+          # move the result of the build out of container's root
+          mv "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool/backend" "/var/lib/containers/${mempool-backend-build-container-name}-tmp"
+          # remove build's fs
+          chattr -i "/var/lib/containers/${mempool-backend-build-container-name}/var/empty" || true
+          rm -rf "/var/lib/containers/${mempool-backend-build-container-name}"
+          # move the result back
+          mkdir -p "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool"
+          mv "/var/lib/containers/${mempool-backend-build-container-name}-tmp" "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool/backend"
+          # replace current backend with new one
+          echo "${mempool-backend-build-container-name}" > /etc/mempool/backend
+          # restart mempool-backend service
+          systemctl restart mempool-backend
+          # cleanup old /etc/mempool/backend's target
+          rm -rf "/var/lib/container/$CURRENT_BACKEND"
+        }
+        # else - just fail
       '';
     };
   };
