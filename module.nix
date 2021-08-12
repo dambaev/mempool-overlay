@@ -131,7 +131,7 @@ in
 
         CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "there-is-no-backend-yet")
         # first of all, cleanup old builds, that may had been interrupted
-        for FAILED_BUILD in ${ls -1 /var/lib/containers | grep "mempool-backend-build-" | grep -v "$CURRENT_BACKEND" || echo ""};
+        for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempool-backend-build-" | grep -v "$CURRENT_BACKEND" || echo "");
         do
           # stop if the build haven't been shutted down
           systemctl stop "container@$FAILED_BUILD" || true
