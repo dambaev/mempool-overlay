@@ -4,6 +4,11 @@ let
     url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
     sha256 = "1gccza1s28ja78iyqv5h22ix5w21acbvffahsb5ifn27q4bq8mk3";
   };
+  initial_script = pkgs.writeText "initial_script.sql" ''
+    CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
+    ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
+    flush privileges;
+  '';
   mempool-backend-build-container-name = "mempool-backend-build-${mempool-source}";
   mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
     set -ex
@@ -45,7 +50,7 @@ in
         }
       ];
       # this script defines password for mysql user 'mempool'
-      initialScript = "${pkgs.mempool-backend}/backend/initial_script.sql";
+      initialScript = "${initialScript}";
       ensureUsers = [
         { name = "mempool";
           ensurePermissions = {
