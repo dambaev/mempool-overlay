@@ -5,7 +5,7 @@ let
     sha256 = "1h2vf54rjsajiy7lh0md8ymdipn04qpbxzqqwfr3b13fzfk29wng";
   };
   mempool-source = pkgs.fetchzip mempool-source-set;
-  mempool-backend-build-container-name = "${mempool-source-set.sha256}";
+  mempool-backend-build-container-name = "mempoolbackendbuild${mempool-source-set.sha256}";
   initial_script = pkgs.writeText "initial_script.sql" ''
     CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
     ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
@@ -146,7 +146,7 @@ in
 
         CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "there-is-no-backend-yet")
         # first of all, cleanup old builds, that may had been interrupted
-        for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempool-backend-build-" | grep -v "$CURRENT_BACKEND" || echo "");
+        for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempoolbackendbuild" | grep -v "$CURRENT_BACKEND" || echo "");
         do
           # stop if the build haven't been shutted down
           systemctl stop "container@$FAILED_BUILD" || true
@@ -170,7 +170,7 @@ in
         # start build container
         systemctl start container@${mempool-backend-build-container-name}
         # wait until it will shutdown
-        nixos-container run "${mempool-backend-build-container-name}" -- "${mempool-backend-build-script}/bin/mempool-backend-build-script" > /etc/mempool/backend-lastlog && {
+        nixos-container run "${mempool-backend-build-container-name}" -- "${mempool-backend-build-script}/bin/mempool-backend-build-script" 2>&1 > /etc/mempool/backend-lastlog && {
           # if build was successfull
           # stop the container as it is not needed anymore
           systemctl stop "container@${mempool-backend-build-container-name}" || true
