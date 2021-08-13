@@ -170,7 +170,7 @@ in
         # start build container
         systemctl start container@${mempool-backend-build-container-name}
         # wait until it will shutdown
-        nixos-container run "${mempool-backend-build-container-name}}" -- "${mempool-backend-build-script}/bin/mempool-backend-build-script" > /etc/mempool/backend-lastlog && {
+        nixos-container run "${mempool-backend-build-container-name}" -- "${mempool-backend-build-script}/bin/mempool-backend-build-script" > /etc/mempool/backend-lastlog && {
           # if build was successfull
           # stop the container as it is not needed anymore
           systemctl stop "container@${mempool-backend-build-container-name}" || true
