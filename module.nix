@@ -84,7 +84,7 @@ in
       ];
       script = ''
         set -ex
-        CURRENT_BACKEND=$(cat /etc/mempool/backend | echo "")
+        CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "")
 
         if [ "$CURRENT_BACKEND" == "" ]; then
           echo "no mempool backend had been built yet, exiting. The successful build will start this service automatically"
