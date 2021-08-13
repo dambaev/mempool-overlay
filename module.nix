@@ -2,5 +2,6 @@
 {
   imports = [
     ./module-backend.nix
+    ./module-frontend.nix
   ];
 }
