@@ -192,5 +192,11 @@ in
         # else - just fail
       '';
     };
+    # this configuration enables network for containers
+    networking.firewall.trustedInterfaces = [ "ve-+" ];
+    networking.nat.enable = true;
+    networking.nat.extraCommands = ''
+      iptables -t nat -A POSTROUTING -s 192.168.254.0/24 -j MASQUERADE
+    '';
   };
 }
