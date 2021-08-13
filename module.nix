@@ -141,6 +141,9 @@ in
       script = ''
         set -ex # echo and fail on errors
 
+        # ensure, that /etc/mempool dir exists, at it will be used later
+        mkdir -p /etc/mempool/
+
         CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "there-is-no-backend-yet")
         # first of all, cleanup old builds, that may had been interrupted
         for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempool-backend-build-" | grep -v "$CURRENT_BACKEND" || echo "");
