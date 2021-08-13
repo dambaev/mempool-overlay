@@ -77,7 +77,10 @@ in
       serviceConfig = {
         Type = "simple";
       };
-      path = with pkgs; [ nodejs bashInteractive ];
+      path = with pkgs; [
+        nodejs
+        bashInteractive
+      ];
       script = ''
         CURRENT_BACKEND=$(cat /etc/mempool/backend | echo "")
 
@@ -87,7 +90,7 @@ in
         fi
         cd "/var/lib/containers/$CURRENT_BACKEND/etc/mempool/backend"
         # deploy the config
-        cp ${cfg.config} ./
+        cp "${mempool_config}" ./
         npm run start
       '';
     };
