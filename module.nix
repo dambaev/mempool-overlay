@@ -92,7 +92,7 @@ in
         fi
         cd "/var/lib/containers/$CURRENT_BACKEND/etc/mempool/backend"
         # deploy the config
-        cp "${mempool_config}" ./
+        cp "${mempool_config}" ./mempool-config.json
         npm run start
       '';
     };
