@@ -30,12 +30,12 @@ in
         worker_connections 9000;
         multi_accept on;
       '';
+      serverTokens = false;
       commonHttpConfig = ''
         sendfile on;
         tcp_nopush on;
         tcp_nodelay on;
 
-        server_tokens off;
         server_name_in_redirect off;
 
         default_type application/octet-stream;
