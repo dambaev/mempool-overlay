@@ -3,7 +3,7 @@ let
     config = {};
   };
   shell = pkgs.mkShell {
-    buildInputs = [
+    buildInputs = with pkgs; [
       nodejs
     ];
   };
