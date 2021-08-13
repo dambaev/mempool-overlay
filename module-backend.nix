@@ -2,12 +2,6 @@
 let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
-  mempool-backend-build-container-name = "mempoolbackendbuild${lib.substring 0 8 mempool-source-set.sha256}";
-  initial_script = pkgs.writeText "initial_script.sql" ''
-    CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
-    ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
-    flush privileges;
-  '';
   mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
     set -ex
     mkdir -p /etc/mempool/
@@ -16,6 +10,14 @@ let
     npm install # using clean-install instead of install, as it is more stricter
     echo "return code $?"
     npm run build
+  '';
+  # we combine the build script with sources' hash so change to any of them will trigger rebuild
+  combined_name = builtins.hashString "sha256" "${mempool-backend-build-script}-${mempool-source-set.sha256}}";
+  mempool-backend-build-container-name = "mempoolbackendbuild${lib.substring 0 8 combined_name}";
+  initial_script = pkgs.writeText "initial_script.sql" ''
+    CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
+    ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
+    flush privileges;
   '';
 
   cfg = config.services.mempool-backend;
