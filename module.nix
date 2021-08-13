@@ -115,7 +115,7 @@ in
         environment.systemPackages = with pkgs; [
           nodejs
           python3
-          make
+          gnumake
         ];
         networking.hostName = "mempoolbackendbuilder";
       };
