@@ -26,7 +26,7 @@ in
         worker_processes auto;
         worker_rlimit_nofile 100000;
       '';
-      eventConfig = ''
+      eventsConfig = ''
         worker_connections 9000;
         multi_accept on;
       '';
@@ -78,7 +78,7 @@ in
         }
         map $limited_ip $limited_ip_key {
           1 $binary_remote_addr;
-          0 '';
+          0 \'\';
         }
 
         # rate limit requests
