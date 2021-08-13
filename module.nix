@@ -83,6 +83,7 @@ in
         bashInteractive
       ];
       script = ''
+        set -ex
         CURRENT_BACKEND=$(cat /etc/mempool/backend | echo "")
 
         if [ "$CURRENT_BACKEND" == "" ]; then
@@ -117,7 +118,6 @@ in
           python3
           gnumake
         ];
-        networking.hostName = "mempoolbackendbuilder";
       };
     };
 
