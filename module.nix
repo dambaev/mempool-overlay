@@ -133,8 +133,7 @@ in
       ];
       requires = [ "network-setup.service" ];
       serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = "yes"; # this allows to run rebuilds only when either service's config or mempool's sources had been changed
+        Type = "simple";
       };
       path = with pkgs; [
         coreutils
