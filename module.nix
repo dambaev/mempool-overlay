@@ -85,6 +85,10 @@ in
       script = ''
         set -ex
         CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "")
+        if [ ! -d "/var/lib/containers/$CURRENT_BACKEND" ]; then
+           # sources' commit is the same, but backend is forced to be rebuilt as it is not exist
+           CURRENT_BACKEND=""
+        fi
 
         if [ "$CURRENT_BACKEND" == "" ]; then
           echo "no mempool backend had been built yet, exiting. The successful build will start this service automatically"
