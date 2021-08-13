@@ -148,6 +148,10 @@ in
         mkdir -p /etc/mempool/
 
         CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "there-is-no-backend-yet")
+        if [ ! -d "/var/lib/containers/$CURRENT_BACKEND" ]; then
+           # sources' commit is the same, but backend is forced to be rebuilt as it is not exist
+           CURRENT_BACKEND="there-is-no-backend-yet"
+        fi
         # first of all, cleanup old builds, that may had been interrupted
         for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempoolbackendbuild" | grep -v "$CURRENT_BACKEND" || echo "");
         do
