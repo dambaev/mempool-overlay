@@ -70,11 +70,8 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [
         "network-setup.service"
-        "electrs.service"
-        # TODO: enable in production, on a test VM it consumes all the space
-        # "bitcoin-mempool.service"
       ];
-      requires = [ "network-setup.service" "electrs.service" ];
+      requires = [ "network-setup.service" ];
       serviceConfig = {
         Type = "simple";
       };
