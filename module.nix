@@ -146,7 +146,7 @@ in
           systemctl stop "container@$FAILED_BUILD" || true
           # remove the container's fs
           chattr -i "/var/lib/containers/$FAILED_BUILD/var/empty" || true
-          rm -rf "/var/lib/containers/$FAILED_BUILD || true
+          rm -rf "/var/lib/containers/$FAILED_BUILD" || true
         done
 
         if [ "$CURRENT_BACKEND" == "${mempool-backend-build-container-name}" ]; then
