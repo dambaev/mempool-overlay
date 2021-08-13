@@ -16,7 +16,7 @@ let
     mkdir -p /etc/mempool/
     cp -r ${mempool-source}/backend /etc/mempool/backend
     cd /etc/mempool/backend
-    npm ci # using clean-install instead of install, as it is more stricter
+    npm install # using clean-install instead of install, as it is more stricter
     echo "return code $?"
     npm run build
   '';
