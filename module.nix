@@ -138,6 +138,7 @@ in
         mempool-backend-build-script
         nixos-container
         e2fsprogs
+        python3
       ];
       script = ''
         set -ex # echo and fail on errors
