@@ -121,7 +121,7 @@ in
           nodejs
           python3
           gnumake
-          gcc-wrapper
+          gcc
         ];
       };
     };
