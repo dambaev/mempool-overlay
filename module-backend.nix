@@ -2,7 +2,7 @@
 let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
-  mempool-backend-build-script-payload = ''
+  mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
     set -ex
     mkdir -p /etc/mempool/
     cp -r ${mempool-source}/backend /etc/mempool/backend
@@ -11,9 +11,8 @@ let
     echo "return code $?"
     npm run build
   '';
-  mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" mempool-backend-build-script-payload;
   # we combine the build script with sources' hash so change to any of them will trigger rebuild
-  combined_name = builtins.hashString "sha256" "${mempool-backend-build-script-payload}-${mempool-source-set.sha256}";
+  combined_name = builtins.hashString "sha256" "${mempool-backend-build-script}-${mempool-source-set.sha256}}";
   mempool-backend-build-container-name = "mempoolbackendbuild${lib.substring 0 8 combined_name}";
   initial_script = pkgs.writeText "initial_script.sql" ''
     CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
