@@ -38,8 +38,6 @@ in
 
         server_name_in_redirect off;
 
-        default_type application/octet-stream;
-
         # reset timed out connections freeing ram
         reset_timedout_connection on;
         # maximum time between packets the client can pause when sending nginx any data
