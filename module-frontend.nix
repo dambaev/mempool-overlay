@@ -22,6 +22,7 @@ in
 
   config = lib.mkIf cfg.enable {
     services.nginx = {
+      enable = true;
       appendConfig = ''
         worker_processes auto;
         worker_rlimit_nofile 100000;
