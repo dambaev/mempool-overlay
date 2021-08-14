@@ -31,6 +31,7 @@ in
         multi_accept on;
       '';
       serverTokens = false;
+      clientMaxBodySize = "10m";
       commonHttpConfig = ''
         sendfile on;
         tcp_nopush on;
@@ -60,9 +61,6 @@ in
         gzip_proxied expired no-cache no-store private auth;
         # text/html is always compressed by gzip module
         gzip_types application/javascript application/json application/ld+json application/manifest+json application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/bmp image/svg+xml image/x-icon text/cache-manifest text/css text/plain text/vcard;
-
-        # limit request body size
-        client_max_body_size 10m;
 
         # proxy cache
         proxy_cache off;
