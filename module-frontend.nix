@@ -317,7 +317,7 @@ in
           # delete possible leftovers from previous builds
           rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
           # move the result of the build out of container's root
-          mv "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool/frontend/dist/mempool" "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
+          mv "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool/frontend/dist/mempool/browser" "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
           # remove build's fs
           chattr -i "/var/lib/containers/${mempool-frontend-build-container-name}/var/empty" || true
           rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}"
