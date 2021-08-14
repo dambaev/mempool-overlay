@@ -314,13 +314,15 @@ in
           # if build was successfull
           # stop the container as it is not needed anymore
           systemctl stop "container@${mempool-frontend-build-container-name}" || true
+          # delete possible leftovers from previous builds
+          rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
           # move the result of the build out of container's root
           mv "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool/frontend/dist/mempool" "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
           # remove build's fs
           chattr -i "/var/lib/containers/${mempool-frontend-build-container-name}/var/empty" || true
           rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}"
           # move the result back
-          mkdir -p "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool"
+          mkdir -p "/var/lib/containers/${mempool-frontend-build-container-name}/etc"
           mv "/var/lib/containers/${mempool-frontend-build-container-name}-tmp" "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool"
           # replace current frontend with new one
           echo "${mempool-frontend-build-container-name}" > /etc/mempool/frontend
