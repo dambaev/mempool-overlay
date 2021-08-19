@@ -1,8 +1,3 @@
 self: super:
-let
-  mempool-frontend-nginx-configs = self.callPackage ./mempool-frontend-nginx-configs.nix {};
-in
-{
-  mempool-frontend-nginx-server-config = mempool-frontend-nginx-configs.mempool-frontend-nginx-server-config;
-}
+self.callPackage ./mempool-frontend-nginx-configs.nix {}
 
