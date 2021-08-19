@@ -29,10 +29,10 @@ let
     buildInputs = with pkgs;
     [ gnused
     ];
-    buildPhase = "exit 0"; # provide the empty build phase so evaluation will be successful
+    buildPhase = "true"; # provide the empty build phase so evaluation will be successful
     installPhase = ''
       mkdir -p $out
-      sed -n '/^events *{.*/,/.*}/p' ../mempool/mempool/nginx.conf  | head -n -1 | tail -n +2 > $out/nginx.conf
+      sed -n '/^events *{.*/,/.*}/p' ./nginx.conf  | head -n -1 | tail -n +2 > $out/nginx.conf
     '';
   };
 in {
