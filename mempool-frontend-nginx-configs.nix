@@ -21,6 +21,7 @@ let
       cp nginx-mempool.conf $out/nginx.conf
     '';
   };
+
   # the result of this derivation contains the 'events' part of original config
   events-config = stdenv.mkDerivation {
     name = "mempool-frontend-nginx-events-config";
