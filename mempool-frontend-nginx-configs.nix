@@ -71,6 +71,7 @@ let
       sed -i '/^[	 ]*access_log/d' common.conf
       sed -i '/^[	 ]*error_log/d' common.conf
       sed -i '/^[	 ]*include/d' common.conf
+      sed -i '/^[	 ]*server_tokens/d' common.conf
     '';
     installPhase = ''
       mkdir -p $out
