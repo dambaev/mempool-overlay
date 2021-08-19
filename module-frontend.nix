@@ -2,7 +2,7 @@
 let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
-  mempool-nginx-configs-overlay = import ./mempool-nginx-configs-overlay.nix; # this overlay contains nginx configs provided by mempool developers, but prepared to be used in nixos
+  mempool-frontend-nginx-configs-overlay = import ./mempool-frontend-nginx-configs-overlay.nix; # this overlay contains nginx configs provided by mempool developers, but prepared to be used in nixos
   mempool-frontend-build-container-name = "mempoolfrontendbuild${lib.substring 0 8 mempool-source-set.sha256}";
   mempool-frontend-build-script = pkgs.writeScriptBin "mempool-frontend-build-script" ''
     set -ex
@@ -23,7 +23,7 @@ in
 
   config = lib.mkIf cfg.enable {
     nixpkgs.overlays = [
-      mempool-nginx-configs-overlay # bring nginx-mempool-configs into the context
+      mempool-frontend-nginx-configs-overlay # bring nginx-mempool-configs into the context
     ];
     environment.systemPackages = with pkgs; [
       mempool-frontend-nginx-server-config
