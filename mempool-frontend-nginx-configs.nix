@@ -56,8 +56,30 @@ let
       cp nginx.conf $out/
     '';
   };
+
+  # the result of this derivation contains the 'http' part (except 'server' part) of the original config
+  common-config = stdenv.mkDerivation {
+    name = "mempool-frontend-nginx-common-config";
+
+    src = fetchzip mempool-sources-set;
+    buildInputs = with pkgs;
+    [ gnused
+    ];
+    buildPhase = ''
+      sed -n '/^http *{.*/,/^}/p' ./nginx.conf > ./common.conf
+      sed -i '/^[ ]*server[ ]*{/,/.*}/d' common.conf
+      sed -i '/^[	 ]*access_log/d' common.conf
+      sed -i '/^[	 ]*error_log/d' common.conf
+      sed -i '/^[	 ]*include/d' common.conf
+    '';
+    installPhase = ''
+      mkdir -p $out
+      cp common.conf $out/
+    '';
+  };
 in {
   mempool-frontend-nginx-server-config = server-config;
   mempool-frontend-nginx-events-config = events-config;
   mempool-frontend-nginx-append-config = append-config;
+  mempool-frontend-nginx-common-config = common-config;
 }
