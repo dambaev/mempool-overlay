@@ -39,7 +39,7 @@ let
 
   # the result of this derivation contains the 'events' part of original config
   append-config = stdenv.mkDerivation {
-    name = "mempool-frontend-nginx-events-config";
+    name = "mempool-frontend-nginx-append-config";
 
     src = fetchzip mempool-sources-set;
     buildInputs = with pkgs;
