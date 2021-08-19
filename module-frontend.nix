@@ -2,6 +2,7 @@
 let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
+  mempool-nginx-configs-overlay = import ./mempool-nginx-configs-overlay.nix; # this overlay contains nginx configs provided by mempool developers, but prepared to be used in nixos
   mempool-frontend-build-container-name = "mempoolfrontendbuild${lib.substring 0 8 mempool-source-set.sha256}";
   mempool-frontend-build-script = pkgs.writeScriptBin "mempool-frontend-build-script" ''
     set -ex
@@ -21,6 +22,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    nixpkgs.overlays = [
+      mempool-nginx-configs-overlay # bring nginx-mempool-configs into the context
+    ];
+    environment.systemPackages = with pkgs; [
+      mempool-frontend-nginx-server-config
+    ];
     services.nginx = {
       enable = true;
       appendConfig = ''
@@ -155,80 +162,8 @@ in
       virtualHosts.mempool = {
         root = "/etc/mempool/frontend_www";
         extraConfig = ''
-          index index.html;
-
-          # enable browser and proxy caching
-          add_header Cache-Control "public, no-transform";
-
-          # vary cache if user changes language preference
-          add_header Vary Accept-Language;
-          add_header Vary Cookie;
-
-          # fallback for all URLs i.e. /address/foo /tx/foo /block/000
-          location / {
-            try_files /$lang/$uri /$lang/$uri/ $uri $uri/ /en-US/$uri @index-redirect;
-            expires 10m;
-          }
-          location /resources {
-            try_files /$lang/$uri /$lang/$uri/ $uri $uri/ /en-US/$uri @index-redirect;
-            expires 1h;
-          }
-          location @index-redirect {
-            rewrite (.*) /$lang/index.html;
-          }
-
-          # location block using regex are matched in order
-
-          # used to rewrite resources from /<lang>/ to /en-US/
-          location ~ ^/(ar|bg|bs|ca|cs|da|de|et|el|es|eo|eu|fa|fr|gl|ko|hr|id|it|he|ka|lv|lt|hu|mk|ms|nl|ja|nb|nn|pl|pt|pt-BR|ro|ru|sk|sl|sr|sh|fi|sv|th|tr|uk|vi|zh|hi)/resources/ {
-            rewrite ^/[a-zA-Z-]*/resources/(.*) /en-US/resources/$1;
-          }
-          # used for cookie override
-          location ~ ^/(ar|bg|bs|ca|cs|da|de|et|el|es|eo|eu|fa|fr|gl|ko|hr|id|it|he|ka|lv|lt|hu|mk|ms|nl|ja|nb|nn|pl|pt|pt-BR|ro|ru|sk|sl|sr|sh|fi|sv|th|tr|uk|vi|zh|hi)/ {
-            try_files $uri $uri/ /$1/index.html =404;
-          }
-
-          # static API docs
-          location = /api {
-            try_files $uri $uri/ /en-US/index.html =404;
-          }
-          location = /api/ {
-            try_files $uri $uri/ /en-US/index.html =404;
-          }
-
-          # mainnet API
-          location /api/v1/donations {
-            proxy_pass https://mempool.space;
-          }
-          location /api/v1/donations/images {
-            proxy_pass https://mempool.space;
-          }
-          location /api/v1/contributors {
-            proxy_pass https://mempool.space;
-          }
-          location /api/v1/contributors/images {
-            proxy_pass https://mempool.space;
-          }
-          location /api/v1/ws {
-            proxy_pass http://127.0.0.1:8999/;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "Upgrade";
-          }
-          location /api/v1 {
-            proxy_pass http://127.0.0.1:8999/api/v1;
-          }
-          location /api/ {
-            proxy_pass http://127.0.0.1:8999/api/v1/;
-          }
-
-          # mainnet API
-          location /ws {
-            proxy_pass http://127.0.0.1:8999/;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "Upgrade";
-          }
+          # include the nginx config, which had been adopted to fit nixos-based nginx config
+          include ${mempool-frontend-nginx-server-config}/nginx.conf;
         '';
       };
     };
