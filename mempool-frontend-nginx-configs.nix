@@ -66,7 +66,7 @@ let
     [ gnused
     ];
     buildPhase = ''
-      sed -n '/^http *{.*/,/^}/p' ./nginx.conf > ./common.conf
+      sed -n '/^http *{.*/,/^}/p' ./nginx.conf | head -n -1 | tail -n +2 > ./common.conf
       sed -i '/^[ ]*server[ ]*{/,/.*}/d' common.conf
       sed -i '/^[	 ]*access_log/d' common.conf
       sed -i '/^[	 ]*error_log/d' common.conf
