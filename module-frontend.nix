@@ -36,7 +36,7 @@ in
       eventsConfig = "include ${pkgs.mempool-frontend-nginx-events-config}/nginx.conf;";
       serverTokens = false;
       clientMaxBodySize = "10m";
-      commonHttpConfig = "include ${pkgs.mempool-frontend-nginx-common-config};";
+      commonHttpConfig = "include ${pkgs.mempool-frontend-nginx-common-config}/nginx.conf;";
       virtualHosts.mempool = {
         root = "/etc/mempool/frontend_www";
         extraConfig = ''
