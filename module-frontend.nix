@@ -163,7 +163,7 @@ in
         root = "/etc/mempool/frontend_www";
         extraConfig = ''
           # include the nginx config, which had been adopted to fit nixos-based nginx config
-          include ${mempool-frontend-nginx-server-config}/nginx.conf;
+          include ${pkgs.mempool-frontend-nginx-server-config}/nginx.conf;
         '';
       };
     };
