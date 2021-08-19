@@ -21,6 +21,21 @@ let
       cp nginx-mempool.conf $out/nginx.conf
     '';
   };
+  # the result of this derivation contains the 'events' part of original config
+  events-config = stdenv.mkDerivation {
+    name = "mempool-frontend-nginx-events-config";
+
+    src = fetchzip mempool-sources-set;
+    buildInputs = with pkgs;
+    [ gnused
+    ];
+    buildPhase = "exit 0"; # provide the empty build phase so evaluation will be successful
+    installPhase = ''
+      mkdir -p $out
+      sed -n '/^events *{.*/,/.*}/p' ../mempool/mempool/nginx.conf  | head -n -1 | tail -n +2 > $out/nginx.conf
+    '';
+  };
 in {
   mempool-frontend-nginx-server-config = server-config;
+  mempool-frontend-nginx-events-config = events-config;
 }
