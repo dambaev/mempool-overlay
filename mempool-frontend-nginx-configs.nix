@@ -36,7 +36,28 @@ let
       sed -n '/^events *{.*/,/.*}/p' ./nginx.conf  | head -n -1 | tail -n +2 > $out/nginx.conf
     '';
   };
+
+  # the result of this derivation contains the 'events' part of original config
+  append-config = stdenv.mkDerivation {
+    name = "mempool-frontend-nginx-events-config";
+
+    src = fetchzip mempool-sources-set;
+    buildInputs = with pkgs;
+    [ gnused
+    ];
+    buildPhase = ''
+      sed -i '/^events *{.*/,/.*}/d' ./nginx.conf
+      sed -i '/^http *{.*/,/^}/d' ./nginx.conf
+      sed -i '/^user/d' nginx-mempool.conf
+      sed -i '/^pid/d' nginx-mempool.conf
+    '';
+    installPhase = ''
+      mkdir -p $out
+      cp nginx.conf $out/
+    '';
+  };
 in {
   mempool-frontend-nginx-server-config = server-config;
   mempool-frontend-nginx-events-config = events-config;
+  mempool-frontend-nginx-append-config = append-config;
 }

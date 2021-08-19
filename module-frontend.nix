@@ -27,13 +27,12 @@ in
     ];
     environment.systemPackages = with pkgs; [
       mempool-frontend-nginx-server-config
+      mempool-frontend-nginx-event-config
+      mempool-frontend-nginx-append-config
     ];
     services.nginx = {
       enable = true;
-      appendConfig = ''
-        worker_processes auto;
-        worker_rlimit_nofile 100000;
-      '';
+      appendConfig = "include ${pkgs.mempool-frontend-nginx-append-config}/nginx.conf;";
       eventsConfig = "include ${pkgs.mempool-frontend-nginx-events-config}/nginx.conf;";
       serverTokens = false;
       clientMaxBodySize = "10m";
