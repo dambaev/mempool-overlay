@@ -1,6 +1,6 @@
 { stdenv, pkgs, fetchzip, fetchpatch, fetchgit, fetchurl }:
 let
-  mempool-sources-set = import mempool-sources-set.nix;
+  mempool-sources-set = import ./mempool-sources-set.nix;
   server-config = stdenv.mkDerivation {
     name = "mempool-frontend-nginx-server-config";
   
