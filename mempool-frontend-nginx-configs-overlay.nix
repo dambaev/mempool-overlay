@@ -1,3 +1,3 @@
 self: super:
-self.callPackage ./mempool-frontend-nginx-configs.nix {};
+self.callPackage ./mempool-frontend-nginx-configs.nix {}
 
