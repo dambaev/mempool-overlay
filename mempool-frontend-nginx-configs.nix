@@ -74,6 +74,7 @@ let
       
       sed -i '/^[	 ]*server_tokens/d' common.conf
       sed -i '/^[	 ]*default_type/d' common.conf
+      sed -i '/^[	 ]*client_max_body_size/d' common.conf
     '';
     installPhase = ''
       mkdir -p $out
