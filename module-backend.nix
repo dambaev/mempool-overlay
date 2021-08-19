@@ -36,6 +36,16 @@ in
         }
       '';
     };
+    build_container_subnet = lib.mkOption {
+      type = lib.types.str;
+      default = "192.168.254";
+      description = ''
+        This option defines prefix of the subnet for private network of the build container. The default value should be fine for most of the users.
+        This subnet is only used during the build phase, as the build is being done inside an isolated container and have no affect on runtime.
+        You should only adjust it in case if you are deploying this config in the network, in which default gateway has IP address 192.168.254.1 or 192.168.254.2. In other cases, you should not have any issues with it.
+      '';
+      example = "192.168.254";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -97,8 +107,8 @@ in
     # define containers, in which the actual build will be running in an isolated filesystem, but with Internet access
     containers.${mempool-backend-build-container-name} = {
       privateNetwork = true;
-      hostAddress = "192.168.254.1";
-      localAddress = "192.168.254.2";
+      hostAddress = "${cfg.build_container_subnet}.1";
+      localAddress = "${cfg.build_container_subnet}.2";
       config = {
         # those options will help to speedup evaluation of container's configurate
         documentation.doc.enable = false;
@@ -201,7 +211,7 @@ in
     networking.firewall.trustedInterfaces = [ "ve-+" ];
     networking.nat.enable = true;
     networking.nat.extraCommands = ''
-      iptables -t nat -A POSTROUTING -s 192.168.254.0/24 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -s ${cfg.build_container_subnet}.0/24 -j MASQUERADE
     '';
   };
 }
