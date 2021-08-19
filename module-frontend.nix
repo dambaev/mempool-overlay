@@ -29,6 +29,7 @@ in
       mempool-frontend-nginx-server-config
       mempool-frontend-nginx-events-config
       mempool-frontend-nginx-append-config
+      mempool-frontend-nginx-common-config
     ];
     services.nginx = {
       enable = true;

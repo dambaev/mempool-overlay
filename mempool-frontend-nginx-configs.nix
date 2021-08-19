@@ -74,7 +74,7 @@ let
     '';
     installPhase = ''
       mkdir -p $out
-      cp common.conf $out/
+      cp common.conf $out/nginx.conf
     '';
   };
 in {
