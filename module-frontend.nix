@@ -27,7 +27,7 @@ in
     ];
     environment.systemPackages = with pkgs; [
       mempool-frontend-nginx-server-config
-      mempool-frontend-nginx-event-config
+      mempool-frontend-nginx-events-config
       mempool-frontend-nginx-append-config
     ];
     services.nginx = {
