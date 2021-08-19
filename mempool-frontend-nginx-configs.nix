@@ -4,7 +4,7 @@ let
   server-config = stdenv.mkDerivation {
     name = "mempool-frontend-nginx-server-config";
   
-    src = mempool-sources-set;
+    src = fetchzip mempool-sources-set;
     buildInputs = with pkgs;
     [ gnused
     ];
