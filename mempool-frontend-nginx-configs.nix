@@ -48,8 +48,8 @@ let
     buildPhase = ''
       sed -i '/^events *{.*/,/.*}/d' ./nginx.conf
       sed -i '/^http *{.*/,/^}/d' ./nginx.conf
-      sed -i '/^user *.*/d' nginx-mempool.conf
-      sed -i '/^pid *.*/d' nginx-mempool.conf
+      sed -i '/^user *.*/d' nginx.conf
+      sed -i '/^pid *.*/d' nginx.conf
     '';
     installPhase = ''
       mkdir -p $out
