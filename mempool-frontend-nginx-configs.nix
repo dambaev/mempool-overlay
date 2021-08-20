@@ -81,9 +81,27 @@ let
       cp common.conf $out/nginx.conf
     '';
   };
+
+  # the result of this derivation contains the 'http' part (except 'server' part) of the original config
+  all-config = stdenv.mkDerivation {
+    name = "mempool-frontend-nginx-config";
+
+    src = fetchzip mempool-sources-set;
+    buildInputs = with pkgs;
+    [ gnused
+    ];
+    buildPhase = ''
+      grep "client_max_body_size" ./nginx.conf | tr -d ';' > client_max_body_size.txt
+    '';
+    installPhase = ''
+      mkdir -p $out
+      cp client_max_body_size.txt $out/
+    '';
+  };
 in {
   mempool-frontend-nginx-server-config = server-config;
   mempool-frontend-nginx-events-config = events-config;
   mempool-frontend-nginx-append-config = append-config;
   mempool-frontend-nginx-common-config = common-config;
+  mempool-frontend-nginx-config = all-config;
 }

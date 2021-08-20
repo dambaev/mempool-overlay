@@ -30,13 +30,14 @@ in
       mempool-frontend-nginx-events-config
       mempool-frontend-nginx-append-config
       mempool-frontend-nginx-common-config
+      mempool-frontend-nginx-config
     ];
     services.nginx = {
       enable = true;
       appendConfig = "include ${pkgs.mempool-frontend-nginx-append-config}/nginx.conf;";
       eventsConfig = "include ${pkgs.mempool-frontend-nginx-events-config}/nginx.conf;";
       serverTokens = false;
-      clientMaxBodySize = "10m";
+      clientMaxBodySize = builtins.readFile "${pkgs.mempool-frontend-nginx-config}/client_max_body_size.txt";
       commonHttpConfig = "include ${pkgs.mempool-frontend-nginx-common-config}/nginx.conf;";
       virtualHosts.mempool = {
         root = "/etc/mempool/frontend_www";
