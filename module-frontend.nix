@@ -38,7 +38,7 @@ in
       eventsConfig = "include ${pkgs.mempool-frontend-nginx-events-config}/nginx.conf;";
       serverTokens =
         let
-          server_tokens_str = builtins.readFile "${pkgs.mempool-frontend-nginx-config}/server_tokens.txt"
+          server_tokens_str = builtins.readFile "${pkgs.mempool-frontend-nginx-config}/server_tokens.txt";
         in
         if server_tokens_str == "on" then true else false;
       clientMaxBodySize = builtins.readFile "${pkgs.mempool-frontend-nginx-config}/client_max_body_size.txt";
