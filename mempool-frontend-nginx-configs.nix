@@ -93,10 +93,12 @@ let
     ];
     buildPhase = ''
       grep "client_max_body_size" ./nginx.conf | awk '{print $2}' | tr -d ';' > client_max_body_size.txt
+      grep "server_tokens" ./nginx.conf | awk '{print $2}' | tr -d ';' > server_tokens.txt
     '';
     installPhase = ''
       mkdir -p $out
       cp client_max_body_size.txt $out/
+      cp server_tokens.txt $out/
     '';
   };
 in {

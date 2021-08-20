@@ -36,7 +36,11 @@ in
       enable = true;
       appendConfig = "include ${pkgs.mempool-frontend-nginx-append-config}/nginx.conf;";
       eventsConfig = "include ${pkgs.mempool-frontend-nginx-events-config}/nginx.conf;";
-      serverTokens = false;
+      serverTokens =
+        let
+          server_tokens_str = builtins.readFile "${pkgs.mempool-frontend-nginx-config}/server_tokens.txt"
+        in
+        if server_tokens_str == "on" then true else false;
       clientMaxBodySize = builtins.readFile "${pkgs.mempool-frontend-nginx-config}/client_max_body_size.txt";
       commonHttpConfig = "include ${pkgs.mempool-frontend-nginx-common-config}/nginx.conf;";
       virtualHosts.mempool = {
