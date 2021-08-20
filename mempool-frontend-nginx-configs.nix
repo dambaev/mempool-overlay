@@ -89,9 +89,10 @@ let
     src = fetchzip mempool-sources-set;
     buildInputs = with pkgs;
     [ gnused
+      gawk
     ];
     buildPhase = ''
-      grep "client_max_body_size" ./nginx.conf | tr -d ';' > client_max_body_size.txt
+      grep "client_max_body_size" ./nginx.conf | awk '{print $2}' | tr -d ';' > client_max_body_size.txt
     '';
     installPhase = ''
       mkdir -p $out
