@@ -82,7 +82,7 @@ in
         mariadb
       ];
       script = ''
-        echo "${initialScript cfg.db_psk}" | mysql -uroot
+        echo "${initial_script cfg.db_psk}" | mysql -uroot
       '';
     };
 
