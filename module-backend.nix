@@ -3,9 +3,10 @@ let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-backend-build-container-name = "mempoolbackendbuild${lib.substring 0 8 mempool-source-set.sha256}";
-  initial_script = pkgs.writeText "initial_script.sql" ''
+  initial_script = db_psk:
+    pkgs.writeText "initial_script.sql" ''
     CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
-    ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
+    ALTER USER mempool@localhost IDENTIFIED BY '${db_psk}';
     flush privileges;
   '';
   mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
@@ -23,6 +24,14 @@ in
 {
   options.services.mempool-backend = {
     enable = lib.mkEnableOption "Mempool service";
+    db_psk = lib.mkOption {
+      type = lib.types.str;
+      default = null;
+      example = "your-secret-from-out-of-git-store";
+      description = ''
+        This value defines a password for database user, which will be used by mempool backend instance to access database.
+      '';
+    };
     config = lib.mkOption {
       type = lib.types.str;
       default = "";
@@ -49,7 +58,7 @@ in
         }
       ];
       # this script defines password for mysql user 'mempool'
-      initialScript = "${initial_script}";
+      initialScript = "${initial_script cfg.db_psk}";
       ensureUsers = [
         { name = "mempool";
           ensurePermissions = {
