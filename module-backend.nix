@@ -72,7 +72,7 @@ in
       after = [
         "mysql.service"
       ];
-      requries = [
+      requires = [
         "mysql.service"
       ];
       serviceConfig = {
