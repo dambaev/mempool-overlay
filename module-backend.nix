@@ -67,6 +67,24 @@ in
         }
       ];
     };
+    systemd.services.mysql-mempool-users = {
+      wantedBy = [ "multi-user.target" ];
+      after = [
+        "mysql.service"
+      ];
+      requries = [
+        "mysql.service"
+      ];
+      serviceConfig = {
+        Type = "simple";
+      };
+      path = with pkgs; [
+        mariadb
+      ];
+      script = ''
+        echo "${initialScript cfg.db_psk}" | mysql -uroot
+      '';
+    };
 
     # create mempool systemd service
     systemd.services.mempool-backend =
