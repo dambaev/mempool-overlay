@@ -99,27 +99,27 @@ in
         }
       ) eachMempool;
     };
-    systemd.services.mysql-mempool-users = {
-      wantedBy = [ "multi-user.target" ];
-      after = [
-        "mysql.service"
-      ];
-      requires = [
-        "mysql.service"
-      ];
-      serviceConfig = {
-        Type = "simple";
+    systemd.services = {
+      mysql-mempool-users = {
+        wantedBy = [ "multi-user.target" ];
+        after = [
+          "mysql.service"
+        ];
+        requires = [
+          "mysql.service"
+        ];
+        serviceConfig = {
+          Type = "simple";
+        };
+        path = with pkgs; [
+          mariadb
+        ];
+        script = lib.concat( lib.mapAttrsToList (name: cfg:
+          ''cat "${initial_script cfg}" | mysql -uroot''
+        ) eachMempool);
       };
-      path = with pkgs; [
-        mariadb
-      ];
-      script = lib.concat( lib.mapAttrsToList (name: cfg:
-        ''cat "${initial_script cfg}" | mysql -uroot''
-      ) eachMempool);
-    };
-
-    # create mempool systemd service
-    systemd.services = lib.mapAttrs' (name: cfg: lib.nameValuePair "mempool-backend-${name}" (
+    } //
+    ( lib.mapAttrs' (name: cfg: lib.nameValuePair "mempool-backend-${name}" (
     let
       mempool_config = pkgs.writeText "mempool-backend.json" cfg.config; # this renders config and stores in /nix/store
     in {
@@ -156,7 +156,7 @@ in
         cp "${mempool_config}" ./mempool-config.json
         npm run start-production
       '';
-    })) eachMempool;
+    })) eachMempool);
     # define containers, in which the actual build will be running in an isolated filesystem, but with Internet access
     containers.${mempool-backend-build-container-name} = {
       config = {
