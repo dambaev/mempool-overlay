@@ -110,7 +110,7 @@ in
         path = with pkgs; [
           mariadb
         ];
-        script = lib.concat( lib.mapAttrsToList (name: cfg:
+        script = lib.foldl' (acc: i: acc + i) '''' ( lib.mapAttrsToList (name: cfg:
           ''cat "${initial_script cfg}" | mysql -uroot''
         ) eachMempool);
       };
@@ -136,7 +136,7 @@ in
         script =
           let
             # we have to render script to restart all the defined backend instances
-            restart-mempool-backends-script = lib.concat (lib.mapAttrsToList (name: cfg:
+            restart-mempool-backends-script = lib.foldl' (acc: i: acc+i) '''' (lib.mapAttrsToList (name: cfg:
             "systemctl restart mempool-backend-${name}\n"
             ) eachMempool);
           in
