@@ -3,10 +3,10 @@ let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-backend-build-container-name = "mempoolbackendbuild${lib.substring 0 8 mempool-source-set.sha256}";
-  initial_script = db_psk:
+  initial_script = cfg:
     pkgs.writeText "initial_script.sql" ''
-    CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
-    ALTER USER mempool@localhost IDENTIFIED BY '${db_psk}';
+    CREATE USER IF NOT EXISTS ${cfg.db_user}@localhost IDENTIFIED BY '${cfg.db_psk}';
+    ALTER USER ${cfg.db_user}@localhost IDENTIFIED BY '${db_psk}';
     flush privileges;
   '';
   mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
@@ -19,53 +19,85 @@ let
     npm run build
   '';
 
-  cfg = config.services.mempool-backend;
+  eachMempool = config.services.mempool-backend;
+  mempoolInstanceOpts = args: {
+    options = {
+      db_name = lib.mkOption {
+        default = null;
+        type = lib.types.str;
+        example = "mempool";
+        description = "Database name of the instance";
+      };
+      db_user = lib.mkOption {
+        default = null;
+        type = lib.types.str;
+        example = "mempool";
+        description = "Username to access instance's database";
+      };
+      db_psk = lib.mkOption {
+        type = lib.types.str;
+        default = null;
+        example = "your-secret-from-out-of-git-store";
+        description = ''
+          This value defines a password for database user, which will be used by mempool backend instance to access database.
+        '';
+      };
+      config = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        example = ''
+          {
+            "ELECTRUM": {
+              "HOST": "127.0.0.1",
+              "PORT": 50002,
+              "TLS_ENABLED": true,
+            }
+          }
+        '';
+      };
+    };
+  };
 in
 {
-  options.services.mempool-backend = {
-    enable = lib.mkEnableOption "Mempool service";
-    db_psk = lib.mkOption {
-      type = lib.types.str;
-      default = null;
-      example = "your-secret-from-out-of-git-store";
-      description = ''
-        This value defines a password for database user, which will be used by mempool backend instance to access database.
-      '';
-    };
-    config = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      example = ''
-        {
-          "ELECTRUM": {
-            "HOST": "127.0.0.1",
-            "PORT": 50002,
-            "TLS_ENABLED": true,
-          }
-        }
-      '';
+  options.services.mempool-backend = lib.mkOption {
+    type = lib.types.attrOs (lib.types.submodule mempoolInstanceOpts);
+    default = {};
+    description = "One or more mempool-backends";
+    example = {
+      mainnet = {
+        config = ''
+          {
+            "ELECTRUM": {
+              "HOST": "127.0.0.1",
+              "PORT": 50002,
+              "TLS_ENABLED": true,
+            }
+        '';
+      };
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf (eachMempool != {}) {
     # enable mysql and declare mempool DB
     services.mysql = {
       enable = true;
       package = pkgs.mariadb; # there is no default value for this option, so we define one
-      initialDatabases = [
-        { name = "mempool";
+      initialDatabases = lib.mapAttrsToList (name: cfg:
+        { name = "${cfg.db_name}";
           schema = "${mempool-source}/mariadb-structure.sql";
         }
-      ];
+      ) earchMempool;
       # this script defines password for mysql user 'mempool'
-      initialScript = "${initial_script cfg.db_psk}";
-      ensureUsers = [
-        { name = "mempool";
+      initialScript = lib.concat( lib.mapAttrsToList (name: cfg:
+        "${initial_script cfg}"
+      ) eachMempool);
+      ensureUsers = lib.mapAttrsToList (name: cfg:
+        { name = "${cfg.db_user}";
           ensurePermissions = {
-            "mempool.*" = "ALL PRIVILEGES";
+            "${cfg.db_name}.*" = "ALL PRIVILEGES";
           };
         }
-      ];
+      ) eachMempool;
     };
     systemd.services.mysql-mempool-users = {
       wantedBy = [ "multi-user.target" ];
@@ -81,13 +113,13 @@ in
       path = with pkgs; [
         mariadb
       ];
-      script = ''
-        cat "${initial_script cfg.db_psk}" | mysql -uroot
-      '';
+      script = lib.concat( lib.mapAttrsToList (name: cfg:
+        "cat "${initial_script cfg}" | mysql -uroot"
+      ) eachMempool);
     };
 
     # create mempool systemd service
-    systemd.services.mempool-backend =
+    systemd.services = lib.mapAttrs' (name: cfg: lib.nameValuePair "mempool-backend-${name}" (
     let
       mempool_config = pkgs.writeText "mempool-backend.json" cfg.config; # this renders config and stores in /nix/store
     in {
@@ -106,7 +138,7 @@ in
       script = ''
         set -ex
         CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "")
-        if [ ! -d "/var/lib/containers/$CURRENT_BACKEND" ]; then
+        if [ ! -d "/var/lib/containers/$CURRENT_BACKEND/etc/mempool/backend" ]; then
            # sources' commit is the same, but backend is forced to be rebuilt as it is not exist
            CURRENT_BACKEND=""
         fi
@@ -115,12 +147,16 @@ in
           echo "no mempool backend had been built yet, exiting. The successful build will start this service automatically"
           exit 0
         fi
-        cd "/var/lib/containers/$CURRENT_BACKEND/etc/mempool/backend"
+        if [ ! -d "/var/lib/containers/$CURRENT_BACKEND-${name}/etc/mempool/backend" ]; then
+          # we know, that "/var/lib/containers/$CURRENT_BACKEND/etc/mempool/backend" exist 
+          cp -r "/var/lib/containers/$CURRENT_BACKEND" "/var/lib/containers/$CURRENT_BACKEND-${name}"
+        fi
+        cd "/var/lib/containers/$CURRENT_BACKEND-${name}/etc/mempool/backend"
         # deploy the config
         cp "${mempool_config}" ./mempool-config.json
-        npm run start
+        npm run start-production
       '';
-    };
+    })) eachMempool;
     # define containers, in which the actual build will be running in an isolated filesystem, but with Internet access
     containers.${mempool-backend-build-container-name} = {
       config = {
@@ -158,7 +194,14 @@ in
         nixos-container
         e2fsprogs
       ];
-      script = ''
+      script =
+        let
+          # we have to render script to restart all the defined backend instances
+          restart-mempool-backends-script = lib.concat (lib.mapAttrsToList (name: cfg:
+          "systemctl restart mempool-backend-${name}\n"
+          );
+        in
+        ''
         set -ex # echo and fail on errors
 
         # ensure, that /etc/mempool dir exists, at it will be used later
@@ -208,8 +251,8 @@ in
           mv "/var/lib/containers/${mempool-backend-build-container-name}-tmp" "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool/backend"
           # replace current backend with new one
           echo "${mempool-backend-build-container-name}" > /etc/mempool/backend
-          # restart mempool-backend service
-          systemctl restart mempool-backend
+          # restart mempool-backend services
+          ${restart-mempool-backends-script}
           # cleanup old /etc/mempool/backend's target
           rm -rf "/var/lib/container/$CURRENT_BACKEND"
         }
