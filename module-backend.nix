@@ -6,7 +6,7 @@ let
   initial_script = cfg:
     pkgs.writeText "initial_script.sql" ''
     CREATE USER IF NOT EXISTS ${cfg.db_user}@localhost IDENTIFIED BY '${cfg.db_psk}';
-    ALTER USER ${cfg.db_user}@localhost IDENTIFIED BY '${db_psk}';
+    ALTER USER ${cfg.db_user}@localhost IDENTIFIED BY '${cfg.db_psk}';
     flush privileges;
   '';
   mempool-backend-build-script = pkgs.writeScriptBin "mempool-backend-build-script" ''
