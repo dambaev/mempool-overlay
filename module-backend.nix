@@ -201,7 +201,7 @@ in
           }
           # else - just fail
         '';
-      }
+      };
     } //
     ( lib.mapAttrs' (name: cfg: lib.nameValuePair "mempool-backend-${name}" (
     let
