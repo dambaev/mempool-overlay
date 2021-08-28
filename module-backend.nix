@@ -87,10 +87,6 @@ in
           schema = "${mempool-source}/mariadb-structure.sql";
         }
       ) eachMempool;
-      # this script defines password for mysql user 'mempool'
-      initialScript = lib.concat( lib.mapAttrsToList (name: cfg:
-        "${initial_script cfg}"
-      ) eachMempool);
       ensureUsers = lib.mapAttrsToList (name: cfg:
         { name = "${cfg.db_user}";
           ensurePermissions = {
