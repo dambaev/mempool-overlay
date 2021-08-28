@@ -118,6 +118,90 @@ in
           ''cat "${initial_script cfg}" | mysql -uroot''
         ) eachMempool);
       };
+    } // { # this service will check if the build is needed and will start a build in a container
+      mempool-backend-build = {
+        wantedBy = [ "multi-user.target" ];
+        after = [
+          "network-setup.service"
+        ];
+        requires = [ "network-setup.service" ];
+        serviceConfig = {
+          Type = "simple";
+        };
+        path = with pkgs; [
+          coreutils
+          systemd
+          nodejs
+          bashInteractive
+          mempool-backend-build-script
+          nixos-container
+          e2fsprogs
+        ];
+        script =
+          let
+            # we have to render script to restart all the defined backend instances
+            restart-mempool-backends-script = lib.concat (lib.mapAttrsToList (name: cfg:
+            "systemctl restart mempool-backend-${name}\n"
+            ) eachMempool);
+          in
+          ''
+          set -ex # echo and fail on errors
+
+          # ensure, that /etc/mempool dir exists, at it will be used later
+          mkdir -p /etc/mempool/
+
+          CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "there-is-no-backend-yet")
+          if [ ! -d "/var/lib/containers/$CURRENT_BACKEND" ]; then
+            # sources' commit is the same, but backend is forced to be rebuilt as it is not exist
+            CURRENT_BACKEND="there-is-no-backend-yet"
+          fi
+          # first of all, cleanup old builds, that may had been interrupted
+          for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempoolbackendbuild" | grep -v "$CURRENT_BACKEND" || echo "");
+          do
+            # stop if the build haven't been shutted down
+            systemctl stop "container@$FAILED_BUILD" || true
+            # remove the container's fs
+            chattr -i "/var/lib/containers/$FAILED_BUILD/var/empty" || true
+            rm -rf "/var/lib/containers/$FAILED_BUILD" || true
+          done
+
+          if [ "$CURRENT_BACKEND" == "${mempool-backend-build-container-name}" ]; then
+            echo "${mempool-backend-build-container-name} is already active backend, do nothing"
+            exit 0
+          fi
+
+          # we are here, because $CURRENT_BACKEND is not ${mempool-backend-build-container-name}
+
+          # remove the build container dir, just in case if it exists already
+          systemctl stop "container@${mempool-backend-build-container-name}" || true
+          chattr -i "/var/lib/container/${mempool-backend-build-container-name}/var/empty" || true
+          rm -rf "/var/lib/container/${mempool-backend-build-container-name}"
+
+          # start build container
+          systemctl start container@${mempool-backend-build-container-name}
+          # wait until it will shutdown
+          nixos-container run "${mempool-backend-build-container-name}" -- "${mempool-backend-build-script}/bin/mempool-backend-build-script" 2>&1 > /etc/mempool/backend-lastlog && {
+            # if build was successfull
+            # stop the container as it is not needed anymore
+            systemctl stop "container@${mempool-backend-build-container-name}" || true
+            # move the result of the build out of container's root
+            mv "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool/backend" "/var/lib/containers/${mempool-backend-build-container-name}-tmp"
+            # remove build's fs
+            chattr -i "/var/lib/containers/${mempool-backend-build-container-name}/var/empty" || true
+            rm -rf "/var/lib/containers/${mempool-backend-build-container-name}"
+            # move the result back
+            mkdir -p "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool"
+            mv "/var/lib/containers/${mempool-backend-build-container-name}-tmp" "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool/backend"
+            # replace current backend with new one
+            echo "${mempool-backend-build-container-name}" > /etc/mempool/backend
+            # restart mempool-backend services
+            ${restart-mempool-backends-script}
+            # cleanup old /etc/mempool/backend's target
+            rm -rf "/var/lib/container/$CURRENT_BACKEND"
+          }
+          # else - just fail
+        '';
+      }
     } //
     ( lib.mapAttrs' (name: cfg: lib.nameValuePair "mempool-backend-${name}" (
     let
@@ -175,89 +259,5 @@ in
       };
     };
 
-    # this service will check if the build is needed and will start a build in a container
-    systemd.services.mempool-backend-build = {
-      wantedBy = [ "multi-user.target" ];
-      after = [
-        "network-setup.service"
-      ];
-      requires = [ "network-setup.service" ];
-      serviceConfig = {
-        Type = "simple";
-      };
-      path = with pkgs; [
-        coreutils
-        systemd
-        nodejs
-        bashInteractive
-        mempool-backend-build-script
-        nixos-container
-        e2fsprogs
-      ];
-      script =
-        let
-          # we have to render script to restart all the defined backend instances
-          restart-mempool-backends-script = lib.concat (lib.mapAttrsToList (name: cfg:
-          "systemctl restart mempool-backend-${name}\n"
-          ) eachMempool);
-        in
-        ''
-        set -ex # echo and fail on errors
-
-        # ensure, that /etc/mempool dir exists, at it will be used later
-        mkdir -p /etc/mempool/
-
-        CURRENT_BACKEND=$(cat /etc/mempool/backend || echo "there-is-no-backend-yet")
-        if [ ! -d "/var/lib/containers/$CURRENT_BACKEND" ]; then
-           # sources' commit is the same, but backend is forced to be rebuilt as it is not exist
-           CURRENT_BACKEND="there-is-no-backend-yet"
-        fi
-        # first of all, cleanup old builds, that may had been interrupted
-        for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempoolbackendbuild" | grep -v "$CURRENT_BACKEND" || echo "");
-        do
-          # stop if the build haven't been shutted down
-          systemctl stop "container@$FAILED_BUILD" || true
-          # remove the container's fs
-          chattr -i "/var/lib/containers/$FAILED_BUILD/var/empty" || true
-          rm -rf "/var/lib/containers/$FAILED_BUILD" || true
-        done
-
-        if [ "$CURRENT_BACKEND" == "${mempool-backend-build-container-name}" ]; then
-          echo "${mempool-backend-build-container-name} is already active backend, do nothing"
-          exit 0
-        fi
-
-        # we are here, because $CURRENT_BACKEND is not ${mempool-backend-build-container-name}
-
-        # remove the build container dir, just in case if it exists already
-        systemctl stop "container@${mempool-backend-build-container-name}" || true
-        chattr -i "/var/lib/container/${mempool-backend-build-container-name}/var/empty" || true
-        rm -rf "/var/lib/container/${mempool-backend-build-container-name}"
-
-        # start build container
-        systemctl start container@${mempool-backend-build-container-name}
-        # wait until it will shutdown
-        nixos-container run "${mempool-backend-build-container-name}" -- "${mempool-backend-build-script}/bin/mempool-backend-build-script" 2>&1 > /etc/mempool/backend-lastlog && {
-          # if build was successfull
-          # stop the container as it is not needed anymore
-          systemctl stop "container@${mempool-backend-build-container-name}" || true
-          # move the result of the build out of container's root
-          mv "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool/backend" "/var/lib/containers/${mempool-backend-build-container-name}-tmp"
-          # remove build's fs
-          chattr -i "/var/lib/containers/${mempool-backend-build-container-name}/var/empty" || true
-          rm -rf "/var/lib/containers/${mempool-backend-build-container-name}"
-          # move the result back
-          mkdir -p "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool"
-          mv "/var/lib/containers/${mempool-backend-build-container-name}-tmp" "/var/lib/containers/${mempool-backend-build-container-name}/etc/mempool/backend"
-          # replace current backend with new one
-          echo "${mempool-backend-build-container-name}" > /etc/mempool/backend
-          # restart mempool-backend services
-          ${restart-mempool-backends-script}
-          # cleanup old /etc/mempool/backend's target
-          rm -rf "/var/lib/container/$CURRENT_BACKEND"
-        }
-        # else - just fail
-      '';
-    };
   };
 }
