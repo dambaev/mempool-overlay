@@ -114,7 +114,7 @@ in
         mariadb
       ];
       script = lib.concat( lib.mapAttrsToList (name: cfg:
-        "cat "${initial_script cfg}" | mysql -uroot"
+        ''cat "${initial_script cfg}" | mysql -uroot''
       ) eachMempool);
     };
 
