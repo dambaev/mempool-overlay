@@ -60,7 +60,7 @@ let
 in
 {
   options.services.mempool-backend = lib.mkOption {
-    type = lib.types.attrOs (lib.types.submodule mempoolInstanceOpts);
+    type = lib.types.attrsOf (lib.types.submodule mempoolInstanceOpts);
     default = {};
     description = "One or more mempool-backends";
     example = {
