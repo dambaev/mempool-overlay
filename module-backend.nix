@@ -199,7 +199,7 @@ in
           # we have to render script to restart all the defined backend instances
           restart-mempool-backends-script = lib.concat (lib.mapAttrsToList (name: cfg:
           "systemctl restart mempool-backend-${name}\n"
-          );
+          ) eachMempool);
         in
         ''
         set -ex # echo and fail on errors
