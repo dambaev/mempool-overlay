@@ -137,8 +137,10 @@ in
           mv "/var/lib/containers/${mempool-frontend-build-container-name}-tmp" "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool"
           # replace current frontend with new one
           echo "${mempool-frontend-build-container-name}" > /etc/mempool/frontend
-          # restart mempool-frontend service
+          # replace current frontend with freshly built one
+          rm /etc/mempool/frontend_www
           ln -svf "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool" "/etc/mempool/frontend_www"
+          # restart mempool-frontend service
           systemctl restart nginx
           # cleanup old /etc/mempool/frontend's target
           rm -rf "/var/lib/container/$CURRENT_FRONTEND"
