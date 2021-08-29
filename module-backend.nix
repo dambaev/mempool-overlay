@@ -191,7 +191,7 @@ in
             # replace current backend with new one
             echo "${mempool-backend-build-container-name}" > /etc/mempool/backend
             # restart mempool-backend services
-            # TODO
+            ${restart-mempool-backends-script}
             # cleanup old /etc/mempool/backend's target
             rm -rf "/var/lib/container/$CURRENT_BACKEND"
           }
