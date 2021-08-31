@@ -79,9 +79,13 @@ in
     # this service will check if the build is needed and will start a build in a container
     systemd.services.mempool-frontend-build =
       let
+        testnet_enabled_str =
+          if cfg.testnet_enabled
+          then "true"
+          else "false";
         frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
           {
-            "TESTNET_ENABLED": ${toString cfg.testnet_enabled}
+            "TESTNET_ENABLED": ${testnet_enabled_str}
           }
         '';
       in {
