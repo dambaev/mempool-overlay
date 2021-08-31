@@ -77,7 +77,14 @@ in
     };
 
     # this service will check if the build is needed and will start a build in a container
-    systemd.services.mempool-frontend-build = {
+    systemd.services.mempool-frontend-build =
+      let
+        frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
+          {
+            "TESTNET_ENABLED": ${toString cfg.testnet_enabled}
+          }
+        '';
+      in {
       wantedBy = [ "multi-user.target" ];
       after = [
         "network-setup.service"
@@ -90,18 +97,11 @@ in
         coreutils
         systemd
         bashInteractive
-        mempool-frontend-build-script
+        (mempool-frontend-build-script frontend_config)
         nixos-container
         e2fsprogs
       ];
       script =
-        let
-          frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
-            {
-              "TESTNET_ENABLED": ${toString cfg.testnet_enabled}
-            }
-          '';
-        in
         ''
         set -ex # echo and fail on errors
 
