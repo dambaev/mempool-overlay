@@ -4,11 +4,12 @@ let
   mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-frontend-nginx-configs-overlay = import ./mempool-frontend-nginx-configs-overlay.nix; # this overlay contains nginx configs provided by mempool developers, but prepared to be used in nixos
   mempool-frontend-build-container-name = "mempoolfrontendbuild${lib.substring 0 8 mempool-source-set.sha256}";
-  mempool-frontend-build-script = pkgs.writeScriptBin "mempool-frontend-build-script" ''
+  mempool-frontend-build-script = config_path: pkgs.writeScriptBin "mempool-frontend-build-script" ''
     set -ex
     mkdir -p /etc/mempool/
     cp -r ${mempool-source}/frontend /etc/mempool/frontend
     cd /etc/mempool/frontend
+    cp ${config_path} ./mempool-frontend-config.json
     npm install # using clean-install instead of install, as it is more stricter
     echo "return code $?"
     npm run build
@@ -19,6 +20,14 @@ in
 {
   options.services.mempool-frontend = {
     enable = lib.mkEnableOption "Mempool service";
+    testnet_enabled = lib.mkOption {
+      type = lib.types.bool;
+      example = false;
+      default = false;
+      description = ''
+        If enabled, frontend will have a dropdown list, from which it will be possible to switch to testnet network
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -85,7 +94,15 @@ in
         nixos-container
         e2fsprogs
       ];
-      script = ''
+      script =
+        let
+          frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
+            {
+              "TESTNET_ENABLED": ${toString cfg.testnet_enabled}
+            }
+          '';
+        in
+        ''
         set -ex # echo and fail on errors
 
         # ensure, that /etc/mempool dir exists, at it will be used later
@@ -121,7 +138,7 @@ in
         # start build container
         systemctl start container@${mempool-frontend-build-container-name}
         # wait until it will shutdown
-        nixos-container run "${mempool-frontend-build-container-name}" -- "${mempool-frontend-build-script}/bin/mempool-frontend-build-script" 2>&1 > /etc/mempool/frontend-lastlog && {
+        nixos-container run "${mempool-frontend-build-container-name}" -- "${mempool-frontend-build-script frontend_config}/bin/mempool-frontend-build-script" 2>&1 > /etc/mempool/frontend-lastlog && {
           # if build was successfull
           # stop the container as it is not needed anymore
           systemctl stop "container@${mempool-frontend-build-container-name}" || true
