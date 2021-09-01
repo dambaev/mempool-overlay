@@ -87,16 +87,16 @@ in
             }
             # signet API
             location /signet/api/v1/ws {
-              proxy_pass http://127.0.0.1:8997/;
+              proxy_pass http://127.0.0.1:8995/;
               proxy_http_version 1.1;
               proxy_set_header Upgrade $http_upgrade;
               proxy_set_header Connection "Upgrade";
             }
             location /signet/api/v1 {
-              proxy_pass http://127.0.0.1:8997/api/v1;
+              proxy_pass http://127.0.0.1:8995/api/v1;
             }
             location /signet/api/ {
-              proxy_pass http://127.0.0.1:60001/;
+              proxy_pass http://127.0.0.1:60601/;
             }
           ''
         else ''
