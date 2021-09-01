@@ -73,6 +73,8 @@ in
               proxy_pass http://127.0.0.1:60001/;
             }
           ''
+        else ''
+        '';
         signet_locations =
           if cfg.signet_enabled
           then ''
