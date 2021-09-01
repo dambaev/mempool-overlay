@@ -111,7 +111,7 @@ in
           mariadb
         ];
         script = lib.foldl' (acc: i: acc + i) '''' ( lib.mapAttrsToList (name: cfg:
-          ''cat "${initial_script cfg}" | mysql -uroot''
+          ''cat "${initial_script cfg}" | mysql -uroot\n''
         ) eachMempool);
       };
     } // { # this service will check if the build is needed and will start a build in a container
