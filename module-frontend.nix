@@ -147,9 +147,14 @@ in
           if cfg.testnet_enabled
           then "true"
           else "false";
+        signet_enabled_str =
+          if cfg.signet_enabled
+          then "true"
+          else "false";
         frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
           {
             "TESTNET_ENABLED": ${testnet_enabled_str}
+            "SIGNET_ENABLED": ${signet_enabled_str}
           }
         '';
       in {
