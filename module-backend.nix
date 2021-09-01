@@ -110,9 +110,9 @@ in
         path = with pkgs; [
           mariadb
         ];
-        script = lib.foldl' (acc: i: acc + i) '''' ( lib.mapAttrsToList (name: cfg:
-          ''cat "${initial_script cfg}" | mysql -uroot''
-        ) eachMempool);
+        script = lib.foldl' (acc: i: acc + i) '''' ( lib.mapAttrsToList (name: cfg: ''
+          cat "${initial_script cfg}" | mysql -uroot
+        '') eachMempool);
       };
     } // { # this service will check if the build is needed and will start a build in a container
       mempool-backend-build = {
