@@ -27,6 +27,7 @@ in
       description = ''
         If enabled, frontend will have a dropdown list, from which it will be possible to switch to testnet network
       '';
+    };
     signet_enabled = lib.mkOption {
       type = lib.types.bool;
       example = false;
