@@ -27,6 +27,13 @@ in
       description = ''
         If enabled, frontend will have a dropdown list, from which it will be possible to switch to testnet network
       '';
+    signet_enabled = lib.mkOption {
+      type = lib.types.bool;
+      example = false;
+      default = false;
+      description = ''
+        If enabled, frontend will have a dropdown list, from which it will be possible to switch to signet network
+      '';
     };
   };
 
@@ -63,6 +70,29 @@ in
               proxy_pass http://127.0.0.1:8997/api/v1;
             }
             location /testnet/api/ {
+              proxy_pass http://127.0.0.1:60001/;
+            }
+          ''
+        signet_locations =
+          if cfg.signet_enabled
+          then ''
+            location = /signet/api {
+              try_files $uri $uri/ /en-US/index.html =404;
+            }
+            location = /signet/api/ {
+              try_files $uri $uri/ /en-US/index.html =404;
+            }
+            # signet API
+            location /signet/api/v1/ws {
+              proxy_pass http://127.0.0.1:8997/;
+              proxy_http_version 1.1;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection "Upgrade";
+            }
+            location /signet/api/v1 {
+              proxy_pass http://127.0.0.1:8997/api/v1;
+            }
+            location /signet/api/ {
               proxy_pass http://127.0.0.1:60001/;
             }
           ''
