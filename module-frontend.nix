@@ -61,11 +61,9 @@ in
             }
             location /testnet/api/v1 {
               proxy_pass http://127.0.0.1:8997/api/v1;
-              limit_req burst=50 nodelay;
             }
             location /testnet/api/ {
               proxy_pass http://127.0.0.1:60001/;
-              limit_req burst=50 nodelay;
             }
           ''
         else ''
