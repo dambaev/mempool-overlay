@@ -41,7 +41,36 @@ in
       mempool-frontend-nginx-common-config
       mempool-frontend-nginx-config
     ];
-    services.nginx = {
+    services.nginx =
+      let
+        testnet_locations =
+          if cfg.testnet_enabled
+          then ''
+            location = /testnet/api {
+              try_files $uri $uri/ /en-US/index.html =404;
+            }
+            location = /testnet/api/ {
+              try_files $uri $uri/ /en-US/index.html =404;
+            }
+            # testnet API
+            location /testnet/api/v1/ws {
+              proxy_pass http://127.0.0.1:8997/;
+              proxy_http_version 1.1;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection "Upgrade";
+            }
+            location /testnet/api/v1 {
+              proxy_pass http://127.0.0.1:8997/api/v1;
+              limit_req burst=50 nodelay;
+            }
+            location /testnet/api/ {
+              proxy_pass http://127.0.0.1:60001/;
+              limit_req burst=50 nodelay;
+            }
+          ''
+        else ''
+        '';
+      in {
       enable = true;
       appendConfig = "include ${pkgs.mempool-frontend-nginx-append-config}/nginx.conf;";
       eventsConfig = "include ${pkgs.mempool-frontend-nginx-events-config}/nginx.conf;";
@@ -57,6 +86,8 @@ in
         extraConfig = ''
           # include the nginx config, which had been adopted to fit nixos-based nginx config
           include ${pkgs.mempool-frontend-nginx-server-config}/nginx.conf;
+          # here we include possible options to route testnet-related requests.
+          ${testnet_locations}
         '';
       };
     };
