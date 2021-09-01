@@ -119,6 +119,8 @@ in
           include ${pkgs.mempool-frontend-nginx-server-config}/nginx.conf;
           # here we include possible options to route testnet-related requests.
           ${testnet_locations}
+          # here we include possible options to route signet-related requests.
+          ${signet_locations}
         '';
       };
     };
