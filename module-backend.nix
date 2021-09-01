@@ -114,8 +114,8 @@ in
           # create database if not exist. we can't use services.mysql.ensureDatabase/initialDatase here the latter
           # will not use schema and the former will only affects the very first start of mariadb service, which is not idemponent
           if [ ! -d "${config.services.mysql.dataDir}/${cfg.db_name}" ]; then
-            ( echo "CREATE DATABASE '${cfg.db_name}';"
-              echo "use '${cfg.db_name}';"
+            ( echo 'CREATE DATABASE `${cfg.db_name}`;'
+              echo 'use `${cfg.db_name}`;'
               cat "${mempool-source}/mariadb-structure.sql"
             ) | mysql -uroot
           fi
