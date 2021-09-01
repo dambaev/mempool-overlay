@@ -111,10 +111,15 @@ in
           mariadb
         ];
         script = lib.foldl' (acc: i: acc + i) '''' ( lib.mapAttrsToList (name: cfg: ''
-          cat "${initial_script cfg}" | mysql -uroot
+          # create database if not exist. we can't use services.mysql.ensureDatabase/initialDatase here the latter
+          # will not use schema and the former will only affects the very first start of mariadb service, which is not idemponent
           if [ ! -d "${config.services.mysql.dataDir}/${cfg.db_name}" ]; then
-            echo "DEBUG: there is no DB ${config.services.mysql.dataDir}/${cfg.db_name}"
+            ( echo "CREATE DATABASE '${cfg.db_name}';"
+              echo "use database '${cfg.db_name}';"
+              cat "${mempool-source}/mariadb-structure.sql"
+            ) | mysql -uroot
           fi
+          cat "${initial_script cfg}" | mysql -uroot
         '') eachMempool);
       };
     } // { # this service will check if the build is needed and will start a build in a container
