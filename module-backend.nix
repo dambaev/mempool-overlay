@@ -112,6 +112,9 @@ in
         ];
         script = lib.foldl' (acc: i: acc + i) '''' ( lib.mapAttrsToList (name: cfg: ''
           cat "${initial_script cfg}" | mysql -uroot
+          if [ ! -d "${config.services.mysql.dataDir}/${cfg.db_name}" ]; then
+            echo "DEBUG: there is no DB ${config.services.mysql.dataDir}/${cfg.db_name}"
+          fi
         '') eachMempool);
       };
     } // { # this service will check if the build is needed and will start a build in a container
