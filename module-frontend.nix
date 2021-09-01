@@ -153,7 +153,7 @@ in
           else "false";
         frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
           {
-            "TESTNET_ENABLED": ${testnet_enabled_str}
+            "TESTNET_ENABLED": ${testnet_enabled_str},
             "SIGNET_ENABLED": ${signet_enabled_str}
           }
         '';
