@@ -3,8 +3,7 @@ let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-frontend-nginx-configs-overlay = import ./mempool-frontend-nginx-configs-overlay.nix; # this overlay contains nginx configs provided by mempool developers, but prepared to be used in nixos
-  mempool-frontend-build-container-name = "mempoolfrontendbuild${lib.substring 0 8 mempool-source-set.sha256}";
-  mempool-frontend-build-script = config_path: pkgs.writeScriptBin "mempool-frontend-build-script" ''
+  mempool-frontend-build-script-payload = config_path: ''
     set -ex
     mkdir -p /etc/mempool/
     cp -r ${mempool-source}/frontend /etc/mempool/frontend
@@ -14,6 +13,12 @@ let
     echo "return code $?"
     npm run build
   '';
+  mempool-frontend-build-script = config_path:
+    pkgs.writeScriptBin "mempool-frontend-build-script" (mempool-frontend-build-script-payload config_path);
+  combined_sha = config_path:
+    builtins.unsafeDiscardStringContext( builtins.hashString "sha256" "${mempool-source-set.sha256}-${mempool-frontend-build-script-payload config_path}");
+  mempool-frontend-build-container-name = config_path:
+    "mempoolfrontendbuild${lib.substring 0 8 (combined_sha config_path)}";
 
   cfg = config.services.mempool-frontend;
 in
@@ -38,7 +43,23 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config =
+    let
+      testnet_enabled_str =
+        if cfg.testnet_enabled
+        then "true"
+        else "false";
+      signet_enabled_str =
+        if cfg.signet_enabled
+        then "true"
+        else "false";
+      frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
+        {
+          "TESTNET_ENABLED": ${testnet_enabled_str},
+          "SIGNET_ENABLED": ${signet_enabled_str}
+        }
+      '';
+    in lib.mkIf cfg.enable {
     nixpkgs.overlays = [
       mempool-frontend-nginx-configs-overlay # bring nginx-mempool-configs into the context
     ];
@@ -126,7 +147,7 @@ in
     };
 
     # define containers, in which the actual build will be running in an isolated filesystem, but with Internet access
-    containers.${mempool-frontend-build-container-name} = {
+    containers.${mempool-frontend-build-container-name frontend_config} = {
       config = {
         # those options will help to speedup evaluation of container's configurate
         documentation.doc.enable = false;
@@ -142,22 +163,7 @@ in
 
     # this service will check if the build is needed and will start a build in a container
     systemd.services.mempool-frontend-build =
-      let
-        testnet_enabled_str =
-          if cfg.testnet_enabled
-          then "true"
-          else "false";
-        signet_enabled_str =
-          if cfg.signet_enabled
-          then "true"
-          else "false";
-        frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
-          {
-            "TESTNET_ENABLED": ${testnet_enabled_str},
-            "SIGNET_ENABLED": ${signet_enabled_str}
-          }
-        '';
-      in {
+      {
       wantedBy = [ "multi-user.target" ];
       after = [
         "network-setup.service"
