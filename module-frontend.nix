@@ -17,7 +17,7 @@ let
     pkgs.writeScriptBin "mempool-frontend-build-script" (mempool-frontend-build-script-payload config_path);
   combined_sha = config_path:
     builtins.unsafeDiscardStringContext( builtins.hashString "sha256" "${mempool-source-set.sha256}-${mempool-frontend-build-script-payload config_path}");
-  mempool-frontend-build-container-name = config_path:
+  generate-mempool-frontend-build-container-name = config_path:
     "mempoolfrontendbuild${lib.substring 0 8 (combined_sha config_path)}";
 
   cfg = config.services.mempool-frontend;
@@ -59,6 +59,7 @@ in
           "SIGNET_ENABLED": ${signet_enabled_str}
         }
       '';
+      mempool-frontend-container-build-name = generate-mempool-frontend-container-build-name frontend_config;
     in lib.mkIf cfg.enable {
     nixpkgs.overlays = [
       mempool-frontend-nginx-configs-overlay # bring nginx-mempool-configs into the context
@@ -147,7 +148,7 @@ in
     };
 
     # define containers, in which the actual build will be running in an isolated filesystem, but with Internet access
-    containers.${mempool-frontend-build-container-name frontend_config} = {
+    containers.${mempool-frontend-build-container-name} = {
       config = {
         # those options will help to speedup evaluation of container's configurate
         documentation.doc.enable = false;
