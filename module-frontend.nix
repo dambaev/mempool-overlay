@@ -59,7 +59,7 @@ in
           "SIGNET_ENABLED": ${signet_enabled_str}
         }
       '';
-      mempool-frontend-container-build-name = generate-mempool-frontend-build-container-name frontend_config;
+      mempool-frontend-build-container-name = generate-mempool-frontend-build-container-name frontend_config;
     in lib.mkIf cfg.enable {
     nixpkgs.overlays = [
       mempool-frontend-nginx-configs-overlay # bring nginx-mempool-configs into the context
