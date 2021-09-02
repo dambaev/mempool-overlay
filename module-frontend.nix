@@ -15,70 +15,8 @@ let
   '';
   mempool-frontend-build-script = config_path:
     pkgs.writeScriptBin "mempool-frontend-build-script" (mempool-frontend-build-script-payload config_path);
-  mempool-frontend-build-service-script = frontend_config: ''
-    set -ex # echo and fail on errors
-
-    # ensure, that /etc/mempool dir exists, at it will be used later
-    mkdir -p /etc/mempool/
-
-    CURRENT_FRONTEND=$(cat /etc/mempool/frontend || echo "there-is-no-frontend-yet")
-    if [ ! -d "/var/lib/containers/$CURRENT_FRONTEND" ]; then
-        # sources' commit is the same, but frontend is forced to be rebuilt as it is not exist
-        CURRENT_FRONTEND="there-is-no-frontend-yet"
-    fi
-    # first of all, cleanup old builds, that may had been interrupted
-    for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempoolfrontendbuild" | grep -v "$CURRENT_FRONTEND" || echo "");
-    do
-      # stop if the build haven't been shutted down
-      systemctl stop "container@$FAILED_BUILD" || true
-      # remove the container's fs
-      chattr -i "/var/lib/containers/$FAILED_BUILD/var/empty" || true
-      rm -rf "/var/lib/containers/$FAILED_BUILD" || true
-    done
-
-    if [ "$CURRENT_FRONTEND" == "${mempool-frontend-build-container-name}" ]; then
-      echo "${mempool-frontend-build-container-name} is already active frontend, do nothing"
-      exit 0
-    fi
-
-    # we are here, because $CURRENT_FRONTEND is not ${mempool-frontend-build-container-name}
-
-    # remove the build container dir, just in case if it exists already
-    systemctl stop "container@${mempool-frontend-build-container-name}" || true
-    chattr -i "/var/lib/container/${mempool-frontend-build-container-name}/var/empty" || true
-    rm -rf "/var/lib/container/${mempool-frontend-build-container-name}"
-
-    # start build container
-    systemctl start container@${mempool-frontend-build-container-name}
-    # wait until it will shutdown
-    nixos-container run "${mempool-frontend-build-container-name}" -- "${mempool-frontend-build-script frontend_config}/bin/mempool-frontend-build-script" 2>&1 > /etc/mempool/frontend-lastlog && {
-      # if build was successfull
-      # stop the container as it is not needed anymore
-      systemctl stop "container@${mempool-frontend-build-container-name}" || true
-      # delete possible leftovers from previous builds
-      rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
-      # move the result of the build out of container's root
-      mv "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool/frontend/dist/mempool/browser" "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
-      # remove build's fs
-      chattr -i "/var/lib/containers/${mempool-frontend-build-container-name}/var/empty" || true
-      rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}"
-      # move the result back
-      mkdir -p "/var/lib/containers/${mempool-frontend-build-container-name}/etc"
-      mv "/var/lib/containers/${mempool-frontend-build-container-name}-tmp" "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool"
-      # replace current frontend with new one
-      echo "${mempool-frontend-build-container-name}" > /etc/mempool/frontend
-      # replace current frontend with freshly built one
-      rm /etc/mempool/frontend_www
-      ln -svf "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool" "/etc/mempool/frontend_www"
-      # restart mempool-frontend service
-      systemctl restart nginx
-      # cleanup old /etc/mempool/frontend's target
-      rm -rf "/var/lib/container/$CURRENT_FRONTEND"
-    }
-    # else - just fail
-  '';
   combined_sha = config_path:
-    builtins.unsafeDiscardStringContext( builtins.hashString "sha256" "${mempool-source-set.sha256}-${mempool-frontend-build-script-payload config_path}-${mempool-frontend-build-service-script config_path}");
+    builtins.unsafeDiscardStringContext( builtins.hashString "sha256" "${mempool-source-set.sha256}-${mempool-frontend-build-script-payload config_path}");
   generate-mempool-frontend-build-container-name = config_path:
     "mempoolfrontendbuild${lib.substring 0 8 (combined_sha config_path)}";
 
@@ -243,7 +181,69 @@ in
         nixos-container
         e2fsprogs
       ];
-      script = mempool-frontend-build-service-script frontend_config;
+      script =
+        ''
+        set -ex # echo and fail on errors
+
+        # ensure, that /etc/mempool dir exists, at it will be used later
+        mkdir -p /etc/mempool/
+
+        CURRENT_FRONTEND=$(cat /etc/mempool/frontend || echo "there-is-no-frontend-yet")
+        if [ ! -d "/var/lib/containers/$CURRENT_FRONTEND" ]; then
+           # sources' commit is the same, but frontend is forced to be rebuilt as it is not exist
+           CURRENT_FRONTEND="there-is-no-frontend-yet"
+        fi
+        # first of all, cleanup old builds, that may had been interrupted
+        for FAILED_BUILD in $(ls -1 /var/lib/containers | grep "mempoolfrontendbuild" | grep -v "$CURRENT_FRONTEND" || echo "");
+        do
+          # stop if the build haven't been shutted down
+          systemctl stop "container@$FAILED_BUILD" || true
+          # remove the container's fs
+          chattr -i "/var/lib/containers/$FAILED_BUILD/var/empty" || true
+          rm -rf "/var/lib/containers/$FAILED_BUILD" || true
+        done
+
+        if [ "$CURRENT_FRONTEND" == "${mempool-frontend-build-container-name}" ]; then
+          echo "${mempool-frontend-build-container-name} is already active frontend, do nothing"
+          exit 0
+        fi
+
+        # we are here, because $CURRENT_FRONTEND is not ${mempool-frontend-build-container-name}
+
+        # remove the build container dir, just in case if it exists already
+        systemctl stop "container@${mempool-frontend-build-container-name}" || true
+        chattr -i "/var/lib/container/${mempool-frontend-build-container-name}/var/empty" || true
+        rm -rf "/var/lib/container/${mempool-frontend-build-container-name}"
+
+        # start build container
+        systemctl start container@${mempool-frontend-build-container-name}
+        # wait until it will shutdown
+        nixos-container run "${mempool-frontend-build-container-name}" -- "${mempool-frontend-build-script frontend_config}/bin/mempool-frontend-build-script" 2>&1 > /etc/mempool/frontend-lastlog && {
+          # if build was successfull
+          # stop the container as it is not needed anymore
+          systemctl stop "container@${mempool-frontend-build-container-name}" || true
+          # delete possible leftovers from previous builds
+          rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
+          # move the result of the build out of container's root
+          mv "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool/frontend/dist/mempool/browser" "/var/lib/containers/${mempool-frontend-build-container-name}-tmp"
+          # remove build's fs
+          chattr -i "/var/lib/containers/${mempool-frontend-build-container-name}/var/empty" || true
+          rm -rf "/var/lib/containers/${mempool-frontend-build-container-name}"
+          # move the result back
+          mkdir -p "/var/lib/containers/${mempool-frontend-build-container-name}/etc"
+          mv "/var/lib/containers/${mempool-frontend-build-container-name}-tmp" "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool"
+          # replace current frontend with new one
+          echo "${mempool-frontend-build-container-name}" > /etc/mempool/frontend
+          # replace current frontend with freshly built one
+          rm /etc/mempool/frontend_www
+          ln -svf "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool" "/etc/mempool/frontend_www"
+          # restart mempool-frontend service
+          systemctl restart nginx
+          # cleanup old /etc/mempool/frontend's target
+          rm -rf "/var/lib/container/$CURRENT_FRONTEND"
+        }
+        # else - just fail
+      '';
     };
   };
 }
