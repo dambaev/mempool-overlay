@@ -15,10 +15,7 @@ let
   '';
   mempool-frontend-build-script = config_path:
     pkgs.writeScriptBin "mempool-frontend-build-script" (mempool-frontend-build-script-payload config_path);
-  mempool-frontend-build-service-script = frontend_config:
-    let
-      mempool-frontend-build-container-name = generate-mempool-frontend-build-container-name frontend_config;
-    in ''
+  mempool-frontend-build-service-script = frontend_config: ''
     set -ex # echo and fail on errors
 
     # ensure, that /etc/mempool dir exists, at it will be used later
