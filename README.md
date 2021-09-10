@@ -155,7 +155,7 @@ As you can see, currently, we don't provide strict dependency on the electrs, bi
 
 ## Implementation details
 
-Canonical NixOS services relies on a nix-derivations and pinning to specific channel commit for building 100% reproducible environments. Although, we are following the same goal, we have fund, that:
+Canonical NixOS services relies on a nix-derivations and pinning to specific channel commit for building 100% reproducible environments. Although, we are following the same goal, we have found, that:
 1. mempool backend/frontend relies on a huge amount of node.js libraries;
 2. `node2nix` is not able to fully reproduce the same environment as `npm`;
 3. `node2nix` does not handles some steps, that are being performed by `npm run build` of the frontend;
@@ -176,7 +176,3 @@ Implementation of such non-canonical way relies on:
 4. `mempoolfrontendbuild<hash>` container, which goal is to run the actual build process of the frontend in an isolated filesystem with only node.js available. Internet is available in this container as well.
 
 In order to be able to run build process of the 'new' backend/frontend instances alongside with running 'previous' backend/frontend, such services relies on a storing hash of the 'current' instances in the `/etc/mempool` directory. Any sucessful build will overwrite such hashes in `/etc/mempool` directory and restart the services to switch to the new version of instances.
-
-
-# Difference with mempool's production how-to
-
