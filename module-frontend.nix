@@ -235,7 +235,7 @@ in
           # replace current frontend with new one
           echo "${mempool-frontend-build-container-name}" > /etc/mempool/frontend
           # replace current frontend with freshly built one
-          rm /etc/mempool/frontend_www
+          rm /etc/mempool/frontend_www || true
           ln -svf "/var/lib/containers/${mempool-frontend-build-container-name}/etc/mempool" "/etc/mempool/frontend_www"
           # restart mempool-frontend service
           systemctl restart nginx
