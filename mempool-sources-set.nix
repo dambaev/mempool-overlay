@@ -1,4 +1,4 @@
 {
   url = "https://github.com/dambaev/mempool/archive/refs/tags/v2.2.2-rc2-exposed-chainwork.tar.gz";
-  sha256 = "0jw1r0ksdn5z4vpkhmy6c7v7y0cmbzm74wrivxrysnx0y3dfyi6z";
+    sha256 = "1blx06v4vw8i0yfi1lmgqb7vg0jil7lfdsxfl6pw9dyyvikkiis8";
 }
