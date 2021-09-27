@@ -1,4 +1,4 @@
 {
-  url = "https://github.com/dambaev/mempool/archive/2c1ec141f6770bfdcfa30f07f0af53f9dc34bb3c.tar.gz";
-  sha256 = "09cwbczfy3kr3asb70rzgn5dmgdfynmw7sbscd6mvaabmfjp6hyf";
+  url = "https://github.com/dambaev/mempool/archive/95f0d070bb9d906047cfeca35e9dfacd0f89854a.tar.gz";
+  sha256 = "0ni6xkc8qi2118pa6369ay5rg24aiqiqx0lsxicvhl468jd9fz0x";
 }
