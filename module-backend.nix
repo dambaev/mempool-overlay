@@ -135,7 +135,7 @@ in
         ];
         script = ''
           set -ex
-          cd ${pkgs.mempool-backend}
+          cd ${pkgs.mempool-backend}/backend
           npm run start-production -- -c "${mempool_config}"
         '';
       })) eachMempool);
