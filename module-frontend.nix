@@ -6,7 +6,7 @@ let
   mempool-overlay = import ./overlay.nix;
 
   cfg = config.services.mempool-frontend;
-  frontend_args = args // {
+  frontend_args = {
     testnet_enabled = cfg.testnet_enabled;
     signet_enabled = cfg.signet_enabled;
   };
