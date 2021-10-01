@@ -1,0 +1,33 @@
+diff --git a/frontend/sync-assets.js b/frontend/sync-assets.js
+index 36fb623..5313850 100644
+--- a/frontend/sync-assets.js
++++ b/frontend/sync-assets.js
+@@ -22,14 +22,21 @@ try {
+ }
+ 
+ function download(filename, url) {
+-  https.get(url, (response) => {
+-    if (response.statusCode < 200 || response.statusCode > 299) {
+-      throw new Error('HTTP Error ' + response.statusCode + ' while fetching \'' + filename + '\'');
++  fs.open( filename, (err, fd) => {
++    if( err) { // if does not exist yet
++      console.log( 'downloading ' + filename);
++      https.get(url, (response) => {
++          if (response.statusCode < 200 || response.statusCode > 299) {
++              throw new Error('HTTP Error ' + response.statusCode + ' while fetching \'' + filename + '\'');
++          }
++          response.pipe(fs.createWriteStream(filename));
++      })
++      .on('error', function(e) {
++          throw new Error(e);
++      });
++    } else { // filename exists
++      fs.close( fd);
+     }
+-    response.pipe(fs.createWriteStream(filename));
+-  })
+-  .on('error', function(e) {
+-    throw new Error(e);
+   });
+ }
+ 
