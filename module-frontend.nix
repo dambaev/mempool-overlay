@@ -3,6 +3,7 @@ let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-frontend-nginx-configs-overlay = import ./mempool-frontend-nginx-configs-overlay.nix; # this overlay contains nginx configs provided by mempool developers, but prepared to be used in nixos
+  mempool-overlay = import ./overlay.nix;
 
   cfg = config.services.mempool-frontend;
   frontend_args = args // {
@@ -34,6 +35,7 @@ in
   config = lib.mkIf cfg.enable {
     nixpkgs.overlays = [
       mempool-frontend-nginx-configs-overlay # bring nginx-mempool-configs into the context
+      mempool-overlay # add mempool-frontend into context
     ];
     environment.systemPackages = with pkgs; [
       mempool-frontend-nginx-server-config

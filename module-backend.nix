@@ -2,6 +2,7 @@
 let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
+  mempool-overlay = import ./overlay.nix;
   initial_script = cfg:
     pkgs.writeText "initial_script.sql" ''
     CREATE USER IF NOT EXISTS ${cfg.db_user}@localhost IDENTIFIED BY '${cfg.db_psk}';
@@ -68,6 +69,9 @@ in
   };
 
   config = lib.mkIf (eachMempool != {}) {
+    nixpkgs.overlays = [
+      mempool-overlay # add mempool-backend into context
+    ];
     environment.systemPackages = [ pkgs.mempool-backend ];
     # enable mysql and declare mempool DB
     services.mysql = {
