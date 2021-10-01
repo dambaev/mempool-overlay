@@ -60,11 +60,9 @@ let
       ./start_with_config_argument.patch # this patch adds support for '-c'/'--config' argument, so we can run `npm run start -- -c /path/to/config` later.
     ];
   };
-  frontend_derivation =
+  frontend_derivation = { testnet_enabled ? false, signet_enabled ? false}:
   let
     nodeDependencies = ( pkgs.callPackage ./frontend/mempool-frontend.nix {}).shell.nodeDependencies;
-  in { testnet_enabled ? false, signet_enabled ? false}:
-  let
     testnet_enabled_str =
       if testnet_enabled
       then "true"
