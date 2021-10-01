@@ -1,4 +1,4 @@
-{config, pkgs, options, lib, ...}:
+{config, pkgs, options, lib, ...}@args:
 let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
