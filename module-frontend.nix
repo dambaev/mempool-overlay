@@ -43,7 +43,7 @@ in
       mempool-frontend-nginx-append-config
       mempool-frontend-nginx-common-config
       mempool-frontend-nginx-config
-      mempool-frontend frontend_args
+      (mempool-frontend frontend_args)
     ];
     services.nginx =
       let
