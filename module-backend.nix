@@ -2,6 +2,12 @@
 let
   mempool-source-set = import ./mempool-sources-set.nix;
   mempool-source = pkgs.fetchzip mempool-source-set;
+  initial_script = cfg:
+    pkgs.writeText "initial_script.sql" ''
+    CREATE USER IF NOT EXISTS ${cfg.db_user}@localhost IDENTIFIED BY '${cfg.db_psk}';
+    ALTER USER ${cfg.db_user}@localhost IDENTIFIED BY '${cfg.db_psk}';
+    flush privileges;
+  '';
 
   eachMempool = config.services.mempool-backend;
   mempoolInstanceOpts = args: {
