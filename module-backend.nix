@@ -131,7 +131,7 @@ in
         ];
         script = ''
           set -ex
-          npm run start-production -- -c "${mempool-config}
+          npm run start-production -- -c "${mempool_config}
         '';
       })) eachMempool);
   };
