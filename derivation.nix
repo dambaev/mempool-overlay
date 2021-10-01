@@ -2,7 +2,6 @@
 { stdenv, pkgs, fetchurl, fetchzip
 }:
 let
-  '';
   poolsJsonUrl = fetchzip {
     url = "https://github.com/btccom/Blockchain-Known-Pools/archive/349c8d907ad9293661c804684782696dcb48d3b4.zip";
     sha256 = "1sqragdf7wbzmrwqz82j9306v9czj6xxpfg6x8c1zy0a6yhzf2fl";
@@ -79,6 +78,7 @@ let
         "TESTNET_ENABLED": ${testnet_enabled_str},
         "SIGNET_ENABLED": ${signet_enabled_str}
       }
+    '';
   in
     stdenv.mkDerivation {
     name = "mempool-frontend";
