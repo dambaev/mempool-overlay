@@ -122,7 +122,7 @@ let
     '';
     installPhase = ''
       mkdir -p $out
-      cp -r dist/* $out
+      cp -r dist/mempool/* $out
     '';
     patches = [
       ./sync-assets.patch # support offline build
