@@ -12,8 +12,8 @@ let
   };
 
   source = fetchurl {
-    url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
-    sha256 = "1gccza1s28ja78iyqv5h22ix5w21acbvffahsb5ifn27q4bq8mk3";
+    url = "https://github.com/dambaev/mempool/archive/95f0d070bb9d906047cfeca35e9dfacd0f89854a.tar.gz";
+    sha256 = "0ni6xkc8qi2118pa6369ay5rg24aiqiqx0lsxicvhl468jd9fz0x";
   };
 
   backend_derivation =
