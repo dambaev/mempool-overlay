@@ -121,7 +121,7 @@ let
     '';
     installPhase = ''
       mkdir -p $out
-      cp -r dist/mempool/* $out
+      cp -r dist/mempool/browser/* $out
     '';
     patches = [
       ./sync-assets.patch # support offline build
