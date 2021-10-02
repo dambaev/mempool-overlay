@@ -11,7 +11,7 @@ let
     sha256 = "0lk377a9kdciwj1w6aik3307zmp64i0sc8g26fmqzm4wfn198n8j";
   };
 
-  source = fetchurl (import ./mempool-sources-set.nix);
+  source = fetchzip (import ./mempool-sources-set.nix);
 
   backend_derivation =
   let
