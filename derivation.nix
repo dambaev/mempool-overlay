@@ -11,10 +11,7 @@ let
     sha256 = "0lk377a9kdciwj1w6aik3307zmp64i0sc8g26fmqzm4wfn198n8j";
   };
 
-  source = fetchurl {
-    url = "https://github.com/mempool/mempool/archive/refs/tags/v2.2.0.tar.gz";
-    sha256 = "1gccza1s28ja78iyqv5h22ix5w21acbvffahsb5ifn27q4bq8mk3";
-  };
+  source = fetchurl (import ./mempool-sources-set.nix);
 
   backend_derivation =
   let
