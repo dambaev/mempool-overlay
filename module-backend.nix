@@ -1,5 +1,7 @@
 {config, pkgs, options, lib, ...}@args:
 let
+  mempool-source-set = import ./mempool-sources-set.nix;
+  mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-overlay = import ./overlay.nix;
   initial_script = cfg:
     pkgs.writeText "initial_script.sql" ''
@@ -77,7 +79,7 @@ in
       package = pkgs.mariadb; # there is no default value for this option, so we define one
       initialDatabases = lib.mapAttrsToList (name: cfg:
         { name = "${cfg.db_name}";
-          schema = "${mempool-backend}/mariadb-structure.sql";
+          schema = "${mempool-source}/mariadb-structure.sql";
         }
       ) eachMempool;
       ensureUsers = lib.mapAttrsToList (name: cfg:
@@ -109,7 +111,7 @@ in
           if [ ! -d "${config.services.mysql.dataDir}/${cfg.db_name}" ]; then
             ( echo 'CREATE DATABASE `${cfg.db_name}`;'
               echo 'use `${cfg.db_name}`;'
-              cat "${mempool-backend}/mariadb-structure.sql"
+              cat "${mempool-source}/mariadb-structure.sql"
             ) | mysql -uroot
           fi
           cat "${initial_script cfg}" | mysql -uroot

@@ -1,5 +1,7 @@
 {config, pkgs, options, lib, ...}@args:
 let
+  mempool-source-set = import ./mempool-sources-set.nix;
+  mempool-source = pkgs.fetchzip mempool-source-set;
   mempool-frontend-nginx-configs-overlay = import ./mempool-frontend-nginx-configs-overlay.nix; # this overlay contains nginx configs provided by mempool developers, but prepared to be used in nixos
   mempool-overlay = import ./overlay.nix;
 
