@@ -91,6 +91,7 @@ let
       cd frontend
       # deploy frontend build config
       cp ${frontend_config} mempool-frontend-config.json
+      # deploying predownloaded assets, so install will not attemp to download them
       mkdir -p dist/mempool/browser/en-US/resources/
       mkdir -p src/resources
       cp ${poolsJsonUrl}/pools.json dist/mempool/browser/en-US/resources/
