@@ -48,6 +48,7 @@ let
       ./start_with_config_argument.patch # this patch adds support for '-c'/'--config' argument, so we can run `npm run start -- -c /path/to/config` later.
     ];
   };
+  # frontend_derivation is a function, because it needs 2 variables, which affect the build result.
   frontend_derivation = { testnet_enabled ? false, signet_enabled ? false}:
   let
     # those repos are required for frontend's step which tries to download some assets during build.
