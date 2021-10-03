@@ -70,6 +70,7 @@ let
       if signet_enabled
       then "true"
       else "false";
+    # this is a frontend build-time config: basically, we are either enable or disable parts of frontend
     frontend_config = pkgs.writeText "mempool-frontend-config.json" ''
       {
         "TESTNET_ENABLED": ${testnet_enabled_str},
@@ -110,6 +111,7 @@ let
       # and create this dir as well
       mkdir $HOME
 
+      # without overriding this env var, build will try to ask for some input.
       export NG_CLI_ANALYTICS=off
       # copy contents of the node_modules, following symlinks, such that current build/install will be able to modify local copies
       cp -r ${nodeDependencies}/lib/node_modules ./node_modules
