@@ -99,7 +99,6 @@ let
       cp ${poolsJsonUrl}/pools.json src/resources
       cp ${assetsJsonUrl}/index.json src/resources/assets.json
       cp ${assetsJsonUrl}/index.minimal.json src/resources/assets.minimal.json
-      export NG_CLI_ANALYTICS=ci
     '';
     buildPhase = ''
       export PATH="${nodeDependencies}/bin:$PATH"
