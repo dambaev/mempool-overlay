@@ -6,7 +6,7 @@ let
 
   backend_derivation =
   let
-    nodeDependencies = ( pkgs.callPackage ./mempool-backend.nix {}).shell.nodeDependencies;
+    nodeDependencies = ( pkgs.callPackage ./backend/mempool-backend.nix {}).shell.nodeDependencies;
     initial_script = pkgs.writeText "initial_script.sql" ''
       CREATE USER IF NOT EXISTS mempool@localhost IDENTIFIED BY 'mempool';
       ALTER USER mempool@localhost IDENTIFIED BY 'mempool';
