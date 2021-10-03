@@ -2,15 +2,6 @@
 { stdenv, pkgs, fetchurl, fetchzip
 }:
 let
-  poolsJsonUrl = fetchzip {
-    url = "https://github.com/btccom/Blockchain-Known-Pools/archive/349c8d907ad9293661c804684782696dcb48d3b4.zip";
-    sha256 = "1sqragdf7wbzmrwqz82j9306v9czj6xxpfg6x8c1zy0a6yhzf2fl";
-  };
-  assetsJsonUrl = fetchzip {
-    url = "https://github.com/mempool/asset_registry_db/archive/689456ad4d653055eb690dca282b9f8faab1e873.zip";
-    sha256 = "0lk377a9kdciwj1w6aik3307zmp64i0sc8g26fmqzm4wfn198n8j";
-  };
-
   source = fetchzip (import ./mempool-sources-set.nix);
 
   backend_derivation =
@@ -59,6 +50,16 @@ let
   };
   frontend_derivation = { testnet_enabled ? false, signet_enabled ? false}:
   let
+    # those repos are required for frontend's step which tries to download some assets during build.
+    poolsJsonUrl = fetchzip {
+      url = "https://github.com/btccom/Blockchain-Known-Pools/archive/349c8d907ad9293661c804684782696dcb48d3b4.zip";
+      sha256 = "1sqragdf7wbzmrwqz82j9306v9czj6xxpfg6x8c1zy0a6yhzf2fl";
+    };
+    assetsJsonUrl = fetchzip {
+      url = "https://github.com/mempool/asset_registry_db/archive/689456ad4d653055eb690dca282b9f8faab1e873.zip";
+      sha256 = "0lk377a9kdciwj1w6aik3307zmp64i0sc8g26fmqzm4wfn198n8j";
+    };
+
     nodeDependencies = ( pkgs.callPackage ./frontend/mempool-frontend.nix {}).shell.nodeDependencies;
     testnet_enabled_str =
       if testnet_enabled
