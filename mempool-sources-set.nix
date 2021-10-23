@@ -1,5 +1,5 @@
 # this file is being imported from multiple modules and it's goal is to provide single source of the op-exchange's sources
 {
-  url = "https://github.com/dambaev/mempool/archive/a40cd85fa44653e12d5cc6ece204a547e6a99108.zip";
-  sha256 = "0bhigfv0w4r9jf01iirj0l5jai5nschmdw0yw4d4s44yaffhms42";
+  url = "https://github.com/dambaev/mempool/archive/bdcb1df0f4f7e156b49839505e8725ae3592e3fe.zip";
+  sha256 = "0mvazaldfiwdr0h395ybvb9d10pj9p3y29isnmxqg3lv1fslg6zq";
 }
